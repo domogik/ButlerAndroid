@@ -1,4 +1,5 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -27,16 +28,33 @@
         android:fitsSystemWindows="true">
 
         <LinearLayout
-            android:id="@+id/fullscreen_content_controls"
-            style="?metaButtonBarStyle"
+            android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:background="@color/black_overlay"
-            android:orientation="horizontal"
-            tools:ignore="UselessParent">
+            android:layout_height="match_parent">
 
+            <TextView
+                android:text="Request"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/request"
+                android:layout_weight="1" />
+
+            <TextView
+                android:text="Response"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/response"
+                android:layout_weight="1" />
+
+            <ImageButton
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/btn_icon"
+                android:id="@+id/speakbutton"
+                android:onClick="onSpeakButton"
+                android:layout_weight="1" />
         </LinearLayout>
+
     </FrameLayout>
 
 </FrameLayout>
