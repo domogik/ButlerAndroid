@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Butler</string>
+
+    <string name="dummy_content">DUMMY\nCONTENT2</string>
+</resources>
