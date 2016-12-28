@@ -1,11 +1,13 @@
 package org.domogik.butler;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -16,8 +18,10 @@ import java.util.Locale;
  * Created by fritz on 27/12/16.
  */
 
-public class GoogleVoice implements
+public class ButlerGoogleVoice extends Activity implements
         RecognitionListener {
+
+    // TODO : option to replace bip for input started, input ended by vibrations (for smartwatches)
 
 
     private SpeechRecognizer speech = null;
@@ -28,7 +32,7 @@ public class GoogleVoice implements
 
     //@Override
     //protected void onCreate(Bundle savedInstanceState) {
-    protected void startVoiceRecognition(Context context) { //, domogik.domodroid.DaemonService Parent) {
+    protected void startVoiceRecognition(Context context) {
         this.context = context;
         // TODO : REPLACE/DEL    this.Parent = Parent;
         speech = SpeechRecognizer.createSpeechRecognizer(context);
@@ -73,8 +77,6 @@ public class GoogleVoice implements
 
     @Override
     public void onError(int errorCode) {
-        //TODO : DELLog.e(LOG_TAG, "ZUT2");
-        //TODO : DEL Toast.makeText(this.context, "ZUT", Toast.LENGTH_SHORT).show();
         String errorMessage = getErrorText(errorCode);
 
         if (errorCode != SpeechRecognizer.ERROR_CLIENT) {
@@ -117,14 +119,16 @@ public class GoogleVoice implements
             break;
         }
         Log.i(LOG_TAG, "Result : " + text);
+        //Toast.makeText(this.context, "Result : " + text , Toast.LENGTH_SHORT).show();  // TODO : DEL
         speech.stopListening();
-        // TODO : REPLACE Parent.gvOnStopListening(matches);
-        // TODO : renvoyer le texte !!!!
-        // TODO : renvoyer le texte !!!!
-        // TODO : renvoyer le texte !!!!
-        // TODO : renvoyer le texte !!!!
-        // TODO : renvoyer le texte !!!!
-        // TODO : renvoyer le texte !!!!
+        // TODO DEL Log.i(LOG_TAG, "JE SUIS ICI");
+
+        // The request is catched by the service for processing and also the fullscreen activity for display
+        Intent i = new Intent("org.domogik.butler.UserRequest");
+        i.putExtra("text", text);
+        context.sendBroadcast(i);
+        // TODO DEL Log.i(LOG_TAG, "ET LA");
+
     }
 
     @Override
@@ -135,6 +139,11 @@ public class GoogleVoice implements
         int level = percent/5;   // to get 20 levels
         level = level * 5;  // to get 0, 5, 10.... 100
         // TODO : REPLACE Parent.gvOnVoiceLevel(level);
+        // TODO : renvoyer la valeur à l'activité (et tester en background)
+        // TODO : renvoyer la valeur à l'activité (et tester en background)
+        // TODO : renvoyer la valeur à l'activité (et tester en background)
+        // TODO : renvoyer la valeur à l'activité (et tester en background)
+
 
     }
 
