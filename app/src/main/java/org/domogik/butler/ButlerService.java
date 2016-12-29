@@ -5,9 +5,21 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Authenticator;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
+import java.net.URL;
 
 /**
  * Created by fritz on 28/12/16.
@@ -52,6 +64,7 @@ public class ButlerService extends Service {
         super.onDestroy();
     }
 
+
 }
 
 
@@ -79,7 +92,7 @@ class StartListeningUserRequestReceiver extends BroadcastReceiver {
 }
 
 
-class UserRequestReceiver extends BroadcastReceiver {
+class UserRequestReceiver extends BroadcastReceiver  implements ButlerDiscussPostAsyncResponse {
     /* When a spoken user request is received and recognized
        This Receiver may be found also on some activities to be displayed
      */
@@ -91,5 +104,56 @@ class UserRequestReceiver extends BroadcastReceiver {
         Log.i(LOG_TAG, "UserRequestReceiver");
         String text = arg.getStringExtra("text");
         // Toast.makeText(context, "User request received : " + text, Toast.LENGTH_LONG).show(); // TODO : DEL
+
+        /*** Call the Butler REST service from Domogik **************************/
+        // TODO : configure
+        String restUrl = "https://192.168.1.50:50000/rest/butler/discuss";
+        final String userAuth = "admin";
+        final String passwordAuth = "milo1919";
+        String user = "Fred";
+        String source = "ButlerAndroid - " + user;
+
+        // Build the data to POST
+        String postData = "{\"text\" : \"" + text + "\", \"source\" : \"" + source + "\"}";
+        Log.i(LOG_TAG, "Data to post to the butler : " + postData);
+
+        // Build authenticator
+        //Authenticator.setDefault(new Authenticator() {
+        //    protected PasswordAuthentication getPasswordAuthentication() {
+        //        return new PasswordAuthentication(userAuth, passwordAuth.toCharArray());
+        //    }
+        //});
+
+        // Do the call
+        ButlerDiscussPostAsyncTask butlerDiscussPostAsyncTask = new ButlerDiscussPostAsyncTask();
+        butlerDiscussPostAsyncTask.delegate = this;
+        butlerDiscussPostAsyncTask.execute();
+    }
+
+    //this override the implemented method from asyncTask
+    @Override
+    public void processFinish(String output){
+        //Here you will receive the result fired from async class
+        //of onPostExecute(result) method.
+        Log.i(LOG_TAG, "Data received from the butler : " + output);
+    }
+}
+
+
+/*** REST related functions ******************************************/
+
+
+class ButlerDiscussPostAsyncTask extends AsyncTask<String, Void, String> {
+    public ButlerDiscussPostAsyncResponse delegate = null;
+
+    @Override
+    protected String doInBackground(String... urls) {
+        delegate.processFinish("hello");
+        return null;
+    }
+    // onPostExecute displays the results of the AsyncTask.
+    @Override
+    protected void onPostExecute(String result) {
+        //Toast.makeText(getBaseContext(), "Data Sent!", Toast.LENGTH_LONG).show();
     }
 }

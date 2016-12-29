@@ -115,7 +115,7 @@ public class ButlerGoogleVoice extends Activity implements
         String text = "";
         for (String result : matches) {
             // we get only the first result...
-            text += result + "\n";
+            text += result; // + "\n";
             break;
         }
         Log.i(LOG_TAG, "Result : " + text);

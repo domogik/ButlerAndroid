@@ -16,9 +16,10 @@
         android:gravity="center"
         android:keepScreenOn="true"
         android:text="@string/dummy_content"
-        android:textColor="#33b5e5"
+        android:textColor="#333333"
         android:textSize="50sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:background="#000000" />
 
     <!-- This FrameLayout insets its children based on system windows using
          android:fitsSystemWindows. -->
@@ -34,6 +35,9 @@
 
             <TextView
                 android:text="Request"
+                android:textColor="#ffffff"
+                android:gravity="center"
+                android:textSize="30dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/request"
@@ -41,18 +45,25 @@
 
             <TextView
                 android:text="Response"
+                android:textColor="#ffffff"
+                android:gravity="center"
+                android:textSize="30dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/response"
                 android:layout_weight="1" />
 
             <ImageButton
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/btn_icon"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
                 android:id="@+id/speakbutton"
                 android:onClick="onSpeakButton"
-                android:layout_weight="1" />
+                android:background="@drawable/btn_icon"
+                android:focusable="false"
+                android:layout_alignParentBottom="true"
+                android:layout_gravity="center" />
+
+
         </LinearLayout>
 
     </FrameLayout>
