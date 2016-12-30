@@ -6,9 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
+
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -20,6 +25,17 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import static android.R.attr.password;
 
 /**
  * Created by fritz on 28/12/16.
@@ -97,11 +113,13 @@ class UserRequestReceiver extends BroadcastReceiver  implements ButlerDiscussPos
        This Receiver may be found also on some activities to be displayed
      */
     private String LOG_TAG = "BUTLER > UserRequestRcv";
+    Context context;
 
     @Override
     public void onReceive(Context context, Intent arg) {
         // TODO Auto-generated method stub
         Log.i(LOG_TAG, "UserRequestReceiver");
+        this.context = context;
         String text = arg.getStringExtra("text");
         // Toast.makeText(context, "User request received : " + text, Toast.LENGTH_LONG).show(); // TODO : DEL
 
@@ -117,25 +135,53 @@ class UserRequestReceiver extends BroadcastReceiver  implements ButlerDiscussPos
         String postData = "{\"text\" : \"" + text + "\", \"source\" : \"" + source + "\"}";
         Log.i(LOG_TAG, "Data to post to the butler : " + postData);
 
-        // Build authenticator
-        //Authenticator.setDefault(new Authenticator() {
-        //    protected PasswordAuthentication getPasswordAuthentication() {
-        //        return new PasswordAuthentication(userAuth, passwordAuth.toCharArray());
-        //    }
-        //});
-
         // Do the call
         ButlerDiscussPostAsyncTask butlerDiscussPostAsyncTask = new ButlerDiscussPostAsyncTask();
         butlerDiscussPostAsyncTask.delegate = this;
-        butlerDiscussPostAsyncTask.execute();
+        butlerDiscussPostAsyncTask.execute(restUrl, userAuth, passwordAuth, postData);
     }
 
     //this override the implemented method from asyncTask
     @Override
-    public void processFinish(String output){
+    public void processFinish(int httpStatusCode, String response){
         //Here you will receive the result fired from async class
         //of onPostExecute(result) method.
-        Log.i(LOG_TAG, "Data received from the butler : " + output);
+        Log.i(LOG_TAG, "Data received from the butler : HTTP_CODE='" + httpStatusCode + "', data=" + response);
+        if (httpStatusCode == 200) {
+            // OK
+            // The handler is needed to be able to Toast
+            Handler h = new Handler(Looper.getMainLooper());
+            h.post(new Runnable() {
+                public void run() {
+                    // TODO : find a way to display the httpcode in the error
+                    Toast.makeText(context, "Querying REST : OK", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+        else {
+            // oups, error !
+            // The handler is needed to be able to Toast
+            Handler h = new Handler(Looper.getMainLooper());
+            h.post(new Runnable() {
+                public void run() {
+                    // TODO : find a way to display the httpcode in the error
+                    Toast.makeText(context, "Error while querying Domogik over Rest.", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
+        /*** Start processing the data **************************/
+        Log.i(LOG_TAG, "Start processing REST response...");
+        // TODO : json object
+        // extract data from json
+        // publish response over Intent
+        // on GUI : display response
+        // on Service : add TTS
+        //              play response
+
+        Intent i = new Intent("org.domogik.butler.Response");
+        i.putExtra("text", response);
+        context.sendBroadcast(i);
     }
 }
 
@@ -145,10 +191,101 @@ class UserRequestReceiver extends BroadcastReceiver  implements ButlerDiscussPos
 
 class ButlerDiscussPostAsyncTask extends AsyncTask<String, Void, String> {
     public ButlerDiscussPostAsyncResponse delegate = null;
+    private String LOG_TAG = "BUTLER > ButlerDiscuss";
 
     @Override
-    protected String doInBackground(String... urls) {
-        delegate.processFinish("hello");
+    protected String doInBackground(String... data) {
+
+        final String restUrl = data[0];
+        final String userAuth = data[1];
+        final String passwordAuth = data[2];
+        final String postData = data[3];
+
+        HttpURLConnection urlConnection=null;
+        // TODO DEL String json = null;
+        int statusCode = 999;
+        String response = "";
+
+
+        try {
+
+
+            URL url=new URL(restUrl);
+            HttpURLConnection con = null;
+
+            // Allow all no validated ssl certificates for now
+            if (url.getProtocol().toLowerCase().equals("https")) {
+                trustAllHosts();
+                HttpsURLConnection https = (HttpsURLConnection) url.openConnection();
+                https.setHostnameVerifier(DO_NOT_VERIFY);
+                con = https;
+            } else {
+                con = (HttpURLConnection) url.openConnection();
+            }
+
+            /*
+            Authenticator.setDefault(new Authenticator() {
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(userAuth, passwordAuth.toCharArray());
+
+                }});
+            */
+
+            /*
+            BASE64Encoder enc = new sun.misc.BASE64Encoder();
+            String userpassword = username + ":" + password;
+            String encodedAuthorization = enc.encode( userpassword.getBytes() );
+            connection.setRequestProperty("Authorization", "Basic "+
+                    encodedAuthorization);
+            */
+
+            String authString = userAuth + ":" + passwordAuth;
+            byte[] authStringB64 = Base64.encode(authString.getBytes(), 0);
+            String authorization = "Basic " + new String(authStringB64);
+            con.setRequestProperty("Authorization", authorization);
+
+            // TODO DEL HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setDoOutput(true);
+            con.setDoInput(true);
+            con.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+            con.setRequestMethod("POST");
+
+            // JSONObject cred = new JSONObject();
+            // cred.put("name","my_name")
+
+            OutputStream os = con.getOutputStream();
+            os.write(postData.getBytes("UTF-8"));
+            os.close();
+
+            InputStream inputStream = con.getInputStream();
+            String result = InputStreamOperations.InputStreamToString(inputStream);
+
+            statusCode = con.getResponseCode();
+            Log.i(LOG_TAG, "REST HTTP Response code : " + statusCode);
+            // Authentication forbidden
+            if (statusCode == 200) {
+                // all ok, process result
+                JSONObject jsonObject = new JSONObject(result);
+                response = jsonObject.getString("text");
+                Log.i(LOG_TAG, "Response from the butler is : " + response);
+            }
+            else if (statusCode == 401) {
+                response = "Bad login or password configured";    // TODO : i18n
+            }
+            else {
+                response = "Error while requesting the butler. Error number is : " + statusCode;    // TODO : i18n
+            }
+
+
+            Log.i(LOG_TAG, "Call to REST finished");
+
+        }
+        catch (Exception e){
+            Log.e(LOG_TAG, "Error while calling REST : " + e.toString());
+        }
+
+
+        delegate.processFinish(statusCode, response);
         return null;
     }
     // onPostExecute displays the results of the AsyncTask.
@@ -156,4 +293,77 @@ class ButlerDiscussPostAsyncTask extends AsyncTask<String, Void, String> {
     protected void onPostExecute(String result) {
         //Toast.makeText(getBaseContext(), "Data Sent!", Toast.LENGTH_LONG).show();
     }
+
+
+    /*** functions to allow all SSL certificates *************************************/
+    final static HostnameVerifier DO_NOT_VERIFY = new HostnameVerifier() {
+        public boolean verify(String hostname, SSLSession session) {
+            return true;
+        }
+    };
+
+    /**
+     * Trust every server - dont check for any certificate
+     */
+    private static void trustAllHosts() {
+        // Create a trust manager that does not validate certificate chains
+        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+            public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                return new java.security.cert.X509Certificate[] {};
+            }
+
+            public void checkClientTrusted(X509Certificate[] chain,
+                                           String authType) throws CertificateException {
+            }
+
+            public void checkServerTrusted(X509Certificate[] chain,
+                                           String authType) throws CertificateException {
+            }
+        } };
+
+        // Install the all-trusting trust manager
+        try {
+            SSLContext sc = SSLContext.getInstance("TLS");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection
+                    .setDefaultSSLSocketFactory(sc.getSocketFactory());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+class InputStreamOperations {
+    // From : http://tutorielandroid.francoiscolin.fr/recupjson.php
+
+    /**
+     * @param in : buffer with the php result
+     * @param bufSize : size of the buffer
+     * @return : the string corresponding to the buffer
+     */
+    public static String InputStreamToString (InputStream in, int bufSize) {
+        final StringBuilder out = new StringBuilder();
+        final byte[] buffer = new byte[bufSize];
+        try {
+            for (int ctr; (ctr = in.read(buffer)) != -1;) {
+                out.append(new String(buffer, 0, ctr));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot convert stream to string", e);
+        }
+        // On retourne la chaine contenant les donnees de l'InputStream
+        return out.toString();
+    }
+
+    /**
+     * @param in : buffer with the php result
+     * @return : the string corresponding to the buffer
+     */
+    public static String InputStreamToString (InputStream in) {
+        // On appelle la methode precedente avec une taille de buffer par defaut
+        return InputStreamToString(in, 1024);
+    }
+
 }

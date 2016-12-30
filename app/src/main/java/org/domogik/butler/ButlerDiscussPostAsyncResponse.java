@@ -5,7 +5,7 @@ package org.domogik.butler;
  */
 
 public interface ButlerDiscussPostAsyncResponse {
-    void processFinish(String output);
+    void processFinish(int httpStatusCode, String output);
 }
 
 

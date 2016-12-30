@@ -31,6 +31,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
     // Receivers
     UserRequestReceiverForGUI userRequestReceiverForGUI;
+    ResponseReceiverForGUI responseReceiverForGUI;
+
     private static FullscreenActivity ins;  // needed by the receivers to call the update functions of the user interface
 
     @Override
@@ -60,6 +62,8 @@ public class FullscreenActivity extends AppCompatActivity {
         // Init the receivers
         userRequestReceiverForGUI = new UserRequestReceiverForGUI();
         registerReceiver(userRequestReceiverForGUI, new IntentFilter("org.domogik.butler.UserRequest"));
+        responseReceiverForGUI = new ResponseReceiverForGUI();
+        registerReceiver(responseReceiverForGUI, new IntentFilter("org.domogik.butler.Response"));
 
     }
 
@@ -81,10 +85,20 @@ public class FullscreenActivity extends AppCompatActivity {
     public static FullscreenActivity  getInstace(){
         return ins;
     }
+
     public void updateTheRequest(final String t) {
         FullscreenActivity.this.runOnUiThread(new Runnable() {
             public void run() {
                 TextView request = (TextView) findViewById(R.id.request);
+                request.setText(t);
+            }
+        });
+    }
+
+    public void updateTheResponse(final String t) {
+        FullscreenActivity.this.runOnUiThread(new Runnable() {
+            public void run() {
+                TextView request = (TextView) findViewById(R.id.response);
                 request.setText(t);
             }
         });
@@ -111,5 +125,22 @@ class UserRequestReceiverForGUI extends BroadcastReceiver {
         //Toast.makeText(context, "User request received : " + text, Toast.LENGTH_LONG).show(); // TODO DEL
         // TODO : add try..catch ?
         FullscreenActivity.getInstace().updateTheRequest(text);
+    }
+}
+
+class ResponseReceiverForGUI extends BroadcastReceiver {
+    /* When a spoken user request is received and recognized
+       This Receiver may be found also on some activities to be displayed
+     */
+    private String LOG_TAG = "GUI > ResponseRcv";
+
+    @Override
+    public void onReceive(Context context, Intent arg) {
+        // TODO Auto-generated method stub
+        Log.i(LOG_TAG, "ResponseReceiverForGUI");
+        String text = arg.getStringExtra("text");
+        //Toast.makeText(context, "User request received : " + text, Toast.LENGTH_LONG).show(); // TODO DEL
+        // TODO : add try..catch ?
+        FullscreenActivity.getInstace().updateTheResponse(text);
     }
 }
