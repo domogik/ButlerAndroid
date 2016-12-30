@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.speech.tts.TextToSpeech;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -121,13 +122,11 @@ public class ButlerGoogleVoice extends Activity implements
         Log.i(LOG_TAG, "Result : " + text);
         //Toast.makeText(this.context, "Result : " + text , Toast.LENGTH_SHORT).show();  // TODO : DEL
         speech.stopListening();
-        // TODO DEL Log.i(LOG_TAG, "JE SUIS ICI");
 
         // The request is catched by the service for processing and also the fullscreen activity for display
         Intent i = new Intent("org.domogik.butler.UserRequest");
         i.putExtra("text", text);
         context.sendBroadcast(i);
-        // TODO DEL Log.i(LOG_TAG, "ET LA");
 
     }
 
@@ -138,6 +137,13 @@ public class ButlerGoogleVoice extends Activity implements
         int percent = (int)(10*Math.pow(10, ((double)rmsdB/(double)10)));
         int level = percent/5;   // to get 20 levels
         level = level * 5;  // to get 0, 5, 10.... 100
+
+        // The request is catched by the GUI for changing the buttin icon depending on the voice level
+        // TODO // Intent i = new Intent("org.domogik.butler.Status");
+        // TODO // i.putExtra("level", level);
+        // TODO // context.sendBroadcast(i);
+
+
         // TODO : REPLACE Parent.gvOnVoiceLevel(level);
         // TODO : renvoyer la valeur à l'activité (et tester en background)
         // TODO : renvoyer la valeur à l'activité (et tester en background)

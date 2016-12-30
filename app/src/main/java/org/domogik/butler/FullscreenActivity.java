@@ -70,14 +70,13 @@ public class FullscreenActivity extends AppCompatActivity {
     // Speak Button pressed (called from activity)
     public void onSpeakButton(View view) {
         Log.d("BUTLER", "Function onSpeakButton");
-        Toast.makeText(getBaseContext(), "Please speak", Toast.LENGTH_SHORT).show();       // TODO : DEL
+        //Toast.makeText(getBaseContext(), "Please speak", Toast.LENGTH_SHORT).show();       // TODO : DEL
         //TODO : do this only if the current status allows it !
         //Gv = new ButlerGoogleVoice();
         //Gv.startVoiceRecognition(getApplicationContext());
 
         Intent i = new Intent("org.domogik.butler.StartListeningUserRequest");
         sendBroadcast(i);
-        Log.i(LOG_TAG, "ET LA TRA LA LA");
     }
 
 
@@ -129,8 +128,7 @@ class UserRequestReceiverForGUI extends BroadcastReceiver {
 }
 
 class ResponseReceiverForGUI extends BroadcastReceiver {
-    /* When a spoken user request is received and recognized
-       This Receiver may be found also on some activities to be displayed
+    /* When a butler response is received
      */
     private String LOG_TAG = "GUI > ResponseRcv";
 

@@ -5,10 +5,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
@@ -27,6 +30,8 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Locale;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -48,6 +53,7 @@ public class ButlerService extends Service {
     // Receivers
     UserRequestReceiver userRequestReceiver;
     StartListeningUserRequestReceiver startListeningUserRequestReceiver;
+    ResponseReceiver responseReceiver;
 
     @Override
     public IBinder onBind(Intent intent){
@@ -57,7 +63,7 @@ public class ButlerService extends Service {
     public void onCreate(){
         super.onCreate();
         //TODO : DEL mp = MediaPlayer.create(getApplicationContext(), R.raw.song);
-        Toast.makeText(getBaseContext(), "Butler service started", Toast.LENGTH_SHORT).show();       // TODO : DEL
+         Toast.makeText(getBaseContext(), "Butler service started", Toast.LENGTH_SHORT).show();      // TODO : DEL
         // TODO : start listening here for keyspotting here ?
 
         // Init the receivers
@@ -65,6 +71,10 @@ public class ButlerService extends Service {
         registerReceiver(userRequestReceiver, new IntentFilter("org.domogik.butler.UserRequest"));
         startListeningUserRequestReceiver = new StartListeningUserRequestReceiver();
         registerReceiver(startListeningUserRequestReceiver, new IntentFilter("org.domogik.butler.StartListeningUserRequest"));
+        responseReceiver = new ResponseReceiver();
+        registerReceiver(responseReceiver, new IntentFilter("org.domogik.butler.Response"));
+
+
     }
 
     @Override
@@ -185,6 +195,106 @@ class UserRequestReceiver extends BroadcastReceiver  implements ButlerDiscussPos
     }
 }
 
+
+class ResponseReceiver extends BroadcastReceiver implements TextToSpeech.OnInitListener  {
+    /* When a butler response is received
+       This Receiver may be found also on some activities to be displayed
+     */
+    private String LOG_TAG = "GUI > ResponseRcv";
+    Context context;
+    // TTS
+    private TextToSpeech tts;
+    private Boolean isTtsReady = false;
+    String textToSpeak = "";
+
+    @Override
+    public void onReceive(Context context, Intent arg) {
+        // TODO Auto-generated method stub
+        Log.i(LOG_TAG, "ResponseReceiver");
+        this.context = context;
+        String text = arg.getStringExtra("text");
+        this.textToSpeak = text;
+
+        // Init the TestToSpeech (tts)
+        tts = new TextToSpeech(context, this);
+        tts.setOnUtteranceProgressListener(listener);
+
+
+    }
+
+
+    // TTS functions ///////////////////////////////////////////////////////////////
+
+    @Override
+    public void onInit(int status) {
+        /* TTS init
+        */
+        Log.i(LOG_TAG, "BUTLER TTS > Function onInit");
+        if(status == TextToSpeech.SUCCESS){
+            tts.setLanguage(new Locale(Locale.getDefault().getISO3Language(), Locale.getDefault().getISO3Country()));
+            isTtsReady = true;
+            Log.i(LOG_TAG, "BUTLER TTS > Function onInit > SUCCESS");
+
+            Log.i(LOG_TAG, "BUTLER TTS > Speak : " + this.textToSpeak);
+            HashMap<String, String> hash = new HashMap<String,String>();
+            hash.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
+                    String.valueOf(AudioManager.STREAM_NOTIFICATION));
+            tts.speak(this.textToSpeak, TextToSpeech.QUEUE_ADD, hash);  // TODO : improve
+
+        }else{
+            isTtsReady = false;
+            Log.e(LOG_TAG, "BUTLER TTS > Unable to set TTS to ready (check your locales)");
+            // TODO : TOAST
+            // TODO : i18n
+            Toast.makeText(this.context, "Butler : error during the TTS init.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    UtteranceProgressListener listener = new UtteranceProgressListener() {
+
+        @Override
+        public void onStart(String utteranceId) {
+            Log.i(LOG_TAG, "BUTLER TTS > speak start");
+            // This actions is already done when we request speaking
+            // But, if we don't do it here, when there are 2 continuous tts actions (queue is full),
+            // we need to put back the status as IS_SPEAKING
+
+            // TODO / setStatus(IS_SPEAKING);
+
+        }
+
+        @Override
+        public void onError(String utteranceId) {
+            Log.i(LOG_TAG, "BUTLER TTS > speak error");
+            //Toast.makeText(this.context, "Butler : error during the TTS action (speaking).", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onDone(String utteranceId) {
+            Log.i(LOG_TAG, "BUTLER TTS > speak done");
+
+
+            /* TODO
+            if (doContinuousSpeech) {
+                // We restart Google voice listening
+                // we force the sleeping status to allow gv to start
+                setStatus(IS_SLEEPING);
+                // we can't call directly this function from here...
+                // so we sendBroadcat to main actibity to make it restart gv
+                //gvStartListening();
+                Intent i = new Intent("domogik.domodroid.DO_CONTINUOUS_SPEECH");
+                sendBroadcast(i);
+
+            }
+            else {
+                // We can restart pocketsphinx listener :)
+                psStartListening();
+
+            }
+            */
+        }
+    };
+}
 
 /*** REST related functions ******************************************/
 
