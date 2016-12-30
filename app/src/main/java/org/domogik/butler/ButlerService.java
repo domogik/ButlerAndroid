@@ -164,7 +164,7 @@ class UserRequestReceiver extends BroadcastReceiver  implements ButlerDiscussPos
             h.post(new Runnable() {
                 public void run() {
                     // TODO : find a way to display the httpcode in the error
-                    Toast.makeText(context, "Querying REST : OK", Toast.LENGTH_LONG).show();
+                    // Toast.makeText(context, "Querying REST : OK", Toast.LENGTH_LONG).show();
                 }
             });
         }
