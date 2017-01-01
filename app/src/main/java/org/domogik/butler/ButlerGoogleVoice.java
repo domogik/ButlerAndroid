@@ -48,6 +48,11 @@ public class ButlerGoogleVoice extends Activity implements
         if (speech.isRecognitionAvailable(context) == true) {
             Log.i(LOG_TAG, "Start listening....");
             speech.startListening(recognizerIntent);
+            Intent i = new Intent("org.domogik.butler.Status");
+            i.putExtra("status", "LISTENING");
+            i.putExtra("voicelevel", 0);    // the voice level will be updated in the onRmsChanged() function
+            context.sendBroadcast(i);
+
         }
         else {
             // TODO : why the fuck this error is not catched ?
@@ -84,7 +89,12 @@ public class ButlerGoogleVoice extends Activity implements
             Log.e(LOG_TAG, "FAILED " + errorMessage);
             Log.e(LOG_TAG, "Request stop listening (onError function). ErrorCode=" + errorCode + ". ErrorMessage=" + errorMessage);
             speech.stopListening();
-            // TODO : REPLACE Parent.gvOnStopListening(null);
+
+
+            Intent i = new Intent("org.domogik.butler.Status");
+            i.putExtra("status", "LISTENING_ERROR");
+            context.sendBroadcast(i);
+
         }
         else {
             // We don't raise any errors here because, it is mainly a not understood query from the user
@@ -123,34 +133,33 @@ public class ButlerGoogleVoice extends Activity implements
         //Toast.makeText(this.context, "Result : " + text , Toast.LENGTH_SHORT).show();  // TODO : DEL
         speech.stopListening();
 
-        // The request is catched by the service for processing and also the fullscreen activity for display
-        Intent i = new Intent("org.domogik.butler.UserRequest");
-        i.putExtra("text", text);
+        // The requests are catched by the service for processing and also the fullscreen activity for display
+        Intent i = new Intent("org.domogik.butler.Status");
+        i.putExtra("status", "LISTENING_DONE");
         context.sendBroadcast(i);
+
+        Intent i2 = new Intent("org.domogik.butler.UserRequest");
+        i2.putExtra("text", text);
+        context.sendBroadcast(i2);
 
     }
 
     @Override
     public void onRmsChanged(float rmsdB) {
-        //Log.i(LOG_TAG, "onRmsChanged: " + rmsdB);
-        //progressBar.setProgress((int) rmsdB);
+        /* NOTICE : this function is not called on some devices... WTF ?
+          For exemple, on KW88 Android 5.1 smartwatch, this function is nevel called even if voice recognition is ok...
+         */
+        Log.i(LOG_TAG, "onRmsChanged: " + rmsdB);
+
         int percent = (int)(10*Math.pow(10, ((double)rmsdB/(double)10)));
         int level = percent/5;   // to get 20 levels
         level = level * 5;  // to get 0, 5, 10.... 100
 
         // The request is catched by the GUI for changing the buttin icon depending on the voice level
-        // TODO // Intent i = new Intent("org.domogik.butler.Status");
-        // TODO // i.putExtra("level", level);
-        // TODO // context.sendBroadcast(i);
-
-
-        // TODO : REPLACE Parent.gvOnVoiceLevel(level);
-        // TODO : renvoyer la valeur à l'activité (et tester en background)
-        // TODO : renvoyer la valeur à l'activité (et tester en background)
-        // TODO : renvoyer la valeur à l'activité (et tester en background)
-        // TODO : renvoyer la valeur à l'activité (et tester en background)
-
-
+        Intent i = new Intent("org.domogik.butler.Status");
+        i.putExtra("status", "LISTENING");
+        i.putExtra("voicelevel", level);
+        context.sendBroadcast(i);
     }
 
     public  String getErrorText(int errorCode) {
