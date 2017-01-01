@@ -24,8 +24,9 @@ public class FullscreenActivity extends AppCompatActivity {
     private String LOG_TAG = "BUTLER > FullscreenAct";
 
     private View mContentView;
-    // Speak Button
+    // Buttons
     ImageButton speakButton;
+    ImageButton muteButton;
     // Google voice for STT
     private ButlerGoogleVoice Gv;
 
@@ -33,6 +34,7 @@ public class FullscreenActivity extends AppCompatActivity {
     StatusReceiverForGUI statusReceiverForGUI;
     UserRequestReceiverForGUI userRequestReceiverForGUI;
     ResponseReceiverForGUI responseReceiverForGUI;
+    MuteStatusReceiverForGUI muteStatusReceiverForGUI;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +56,9 @@ public class FullscreenActivity extends AppCompatActivity {
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
-        // Speak Button
+        // Buttons
         speakButton = (ImageButton)findViewById(R.id.speakbutton);
+        muteButton = (ImageButton)findViewById(R.id.muteButton);
 
         // Init the receivers
         statusReceiverForGUI = new StatusReceiverForGUI(this);
@@ -64,19 +67,24 @@ public class FullscreenActivity extends AppCompatActivity {
         registerReceiver(userRequestReceiverForGUI, new IntentFilter("org.domogik.butler.UserRequest"));
         responseReceiverForGUI = new ResponseReceiverForGUI(this);
         registerReceiver(responseReceiverForGUI, new IntentFilter("org.domogik.butler.Response"));
+        muteStatusReceiverForGUI = new MuteStatusReceiverForGUI(this);
+        registerReceiver(muteStatusReceiverForGUI, new IntentFilter("org.domogik.butler.MuteStatus"));
 
     }
 
     // Speak Button pressed (called from activity)
     public void onSpeakButton(View view) {
         Log.d("BUTLER", "Function onSpeakButton");
-        //Toast.makeText(getBaseContext(), "Please speak", Toast.LENGTH_SHORT).show();       // TODO : DEL
-        //TODO : do this only if the current status allows it !
-        //Gv = new ButlerGoogleVoice();
-        //Gv.startVoiceRecognition(getApplicationContext());
-
         Intent i = new Intent("org.domogik.butler.StartListeningUserRequest");
         sendBroadcast(i);
+    }
+
+    // Mute/unmute Button pressed (called from activity)
+    public void onMuteButton(View view) {
+        Log.d("BUTLER", "Function onMuteButton");
+        Intent i = new Intent("org.domogik.butler.MuteAction");
+        sendBroadcast(i);
+        // TODO : handle a MuteStatus sent from the service and change the button background with the appropriate value
     }
 
 
@@ -214,7 +222,31 @@ public class FullscreenActivity extends AppCompatActivity {
         }
     }
 
+    class MuteStatusReceiverForGUI extends BroadcastReceiver {
+        /* When a spoken user request is received and recognized
+           This Receiver may be found also on some activities to be displayed
+         */
+        private Context context;
+        public MuteStatusReceiverForGUI(Context context) {
+            this.context = context;
+        }
 
+        private String LOG_TAG = "GUI > MuteStatusRcv";
+
+        @Override
+        public void onReceive(Context context, Intent arg) {
+            // TODO Auto-generated method stub
+            Log.i(LOG_TAG, "MuteStatusReceiverForGUI");
+            Boolean isMute = arg.getBooleanExtra("mute", false);
+
+            if (isMute) {
+                muteButton.setBackgroundResource(R.drawable.mute);
+            }
+            else {
+                muteButton.setBackgroundResource(R.drawable.unmute);
+            }
+        }
+    }
 }
 
 

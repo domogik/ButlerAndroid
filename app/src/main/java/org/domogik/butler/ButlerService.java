@@ -53,12 +53,14 @@ public class ButlerService extends Service {
 
     // Configuration
     Boolean continuousDialog = true;    // TODO : get from config ? Or let it hardcoded ?
+    Boolean isTTSMute = false;          // TODO : get from config ? Or let it hardcoded ?
 
     // Receivers
     StatusReceiver statusReceiver;
     UserRequestReceiver userRequestReceiver;
     StartListeningUserRequestReceiver startListeningUserRequestReceiver;
     ResponseReceiver responseReceiver;
+    MuteReceiver muteReceiver;
 
 
     @Override
@@ -82,6 +84,8 @@ public class ButlerService extends Service {
         registerReceiver(startListeningUserRequestReceiver, new IntentFilter("org.domogik.butler.StartListeningUserRequest"));
         responseReceiver = new ResponseReceiver(this);
         registerReceiver(responseReceiver, new IntentFilter("org.domogik.butler.Response"));
+        muteReceiver = new MuteReceiver(this);
+        registerReceiver(muteReceiver, new IntentFilter("org.domogik.butler.MuteAction"));
 
 
     }
@@ -199,7 +203,8 @@ public class ButlerService extends Service {
 
             /*** Call the Butler REST service from Domogik **************************/
             // TODO : configure
-            String restUrl = "https://192.168.1.50:50000/rest/butler/discuss";
+            //String restUrl = "https://192.168.1.50:50000/rest/butler/discuss";
+            String restUrl = "https://78.198.200.93:50000/rest/butler/discuss";
             final String userAuth = "admin";
             final String passwordAuth = "milo1919";
             String user = "Fred";
@@ -293,10 +298,18 @@ public class ButlerService extends Service {
             String text = arg.getStringExtra("text");
             this.textToSpeak = text;
 
-            // Init the TestToSpeech (tts)
-            tts = new TextToSpeech(context, this);
-            tts.setOnUtteranceProgressListener(listener);
-
+            // Speak only if not muted
+            if (!isTTSMute) {
+                // Init the TestToSpeech (tts)
+                tts = new TextToSpeech(context, this);
+                tts.setOnUtteranceProgressListener(listener);
+            }
+            else {
+                // Muted, so end of speaking immediatly
+                Intent i2 = new Intent("org.domogik.butler.Status");
+                i2.putExtra("status", "SPEAKING_DONE");
+                context.sendBroadcast(i2);
+            }
 
         }
 
@@ -379,6 +392,31 @@ public class ButlerService extends Service {
             }
         };
     }
+
+
+    class MuteReceiver extends BroadcastReceiver {
+        /* Used to catch a request to speak to the Butler
+           Can be called from an activity or a keyspotting feature in background
+         */
+        private Context context;
+        public MuteReceiver(Context context) {
+            this.context = context;
+        }
+
+        private String LOG_TAG = "BUTLER > MuteReceiver"; //shortened :(
+
+        @Override
+        public void onReceive(Context context, Intent arg) {
+            // TODO Auto-generated method stub
+            Log.i(LOG_TAG, "MuteReceiver");
+            isTTSMute = !isTTSMute;
+            Intent i = new Intent("org.domogik.butler.MuteStatus");
+            i.putExtra("mute", isTTSMute);
+            context.sendBroadcast(i);
+
+        }
+    }
+
 
     /***
      * REST related functions

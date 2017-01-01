@@ -1,0 +1,23 @@
+
+
+List of the status
+==================
+
+::
+
+    WAITING                        # Set up at service startup and used when no listening/processing/speaking action is done
+    
+    LISTENING
+    
+    LISTENING_ERROR                # Raised if an error occured during voice recognition
+    \_ WAITING
+ 
+    LISTENING_DONE                 #
+    \_ REQUESTING_THE_BUTLER       # These 2 are basically the same
+    
+    REQUESTING_THE_BUTLER_DONE     #
+    \_ SPEAKING                    # These 2 are basically the same
+    
+    SPEAKING_DONE
+    \_ WAITING
+
