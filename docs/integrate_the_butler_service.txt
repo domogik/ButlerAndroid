@@ -1,0 +1,17 @@
+To include the butler service part in another application :
+
+1. copy all Butler*.java files
+2. in the AndroidManifest, get these parts :
+
+TODO
+
+Try to build your app. If OK, then : 
+
+3. start the service from your main activity :
+
+TODO
+
+4. add some Receivers if you need to have interactions between your user interface (or another interface) with the butler service :
+
+TODO : example
+TODO : list of existing Intents
