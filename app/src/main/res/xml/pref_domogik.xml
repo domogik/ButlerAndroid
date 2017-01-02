@@ -1,0 +1,27 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <EditTextPreference
+        android:key="domogik_admin_url"
+        android:defaultValue="@string/pref_default_domogik_admin_url"
+        android:summary="@string/pref_summary_domogik_admin_url"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_domogik_admin_url" />
+
+    <EditTextPreference
+        android:key="domogik_user"
+        android:defaultValue="@string/pref_default_domogik_admin_user"
+        android:summary="@string/pref_summary_domogik_admin_user"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_domogik_admin_user" />
+
+    <EditTextPreference
+        android:key="domogik_password"
+        android:defaultValue="@string/pref_default_domogik_admin_password"
+        android:summary="@string/pref_summary_domogik_admin_password"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_domogik_admin_password" />
+
+</PreferenceScreen>

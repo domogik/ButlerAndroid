@@ -86,10 +86,16 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"/>
 
-                <View
+                <ImageButton
                     android:layout_width="50dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="0"/>
+                    android:layout_height="50dp"
+                    android:id="@+id/menuButton"
+                    android:onClick="onMenuButton"
+                    android:background="@drawable/menu"
+                    android:focusable="false"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:layout_weight="0" />
 
                 <View
                     android:layout_width="0dp"

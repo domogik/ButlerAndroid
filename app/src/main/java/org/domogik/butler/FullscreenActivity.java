@@ -2,11 +2,16 @@ package org.domogik.butler;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
@@ -65,15 +70,43 @@ public class FullscreenActivity extends AppCompatActivity {
 
         }
 
-        // Switch Fullscreen mode
+        // Switch screen mode
 
         mContentView = findViewById(R.id.fullscreen_content);
+        int screenSize = getResources().getConfiguration().screenLayout &
+                Configuration.SCREENLAYOUT_SIZE_MASK;
+
+        String toastMsg;
+        switch(screenSize) {
+            case Configuration.SCREENLAYOUT_SIZE_LARGE:
+                toastMsg = "Large screen";
+                break;
+            case Configuration.SCREENLAYOUT_SIZE_NORMAL:
+                toastMsg = "Normal screen";
+                break;
+            case Configuration.SCREENLAYOUT_SIZE_SMALL:
+                toastMsg = "Small screen";
+                mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
+                break;
+            default:
+                toastMsg = "Screen size is neither large, normal or small";
+        }
+        //Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
+
+        /*
         mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
                 | View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                */
 
         // Buttons
         speakButton = (ImageButton)findViewById(R.id.speakbutton);
@@ -89,6 +122,45 @@ public class FullscreenActivity extends AppCompatActivity {
         muteStatusReceiverForGUI = new MuteStatusReceiverForGUI(this);
         registerReceiver(muteStatusReceiverForGUI, new IntentFilter("org.domogik.butler.MuteStatus"));
 
+        // First, we check if the configuration is done. If not, we open the configuration screen
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String adminUrl = settings.getString("domogik_admin_url", "notconfigured");
+        String userAuth = settings.getString("domogik_user", "notconfigured");
+        String passwordAuth = settings.getString("domogik_password", "notconfigured");
+        if ((adminUrl.equals("notconfigured"))
+            || (userAuth.equals("notconfigured"))
+            || (passwordAuth.equals("notconfigured"))) {
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+
+                    if (!isFinishing()){
+                        new AlertDialog.Builder(FullscreenActivity.this)
+                                .setTitle("Configuration")          // TODO : i18n
+                                .setMessage("The configuration is not complete!")
+                                .setCancelable(false)
+                                .setPositiveButton("ok", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Intent intent = new Intent(FullscreenActivity.this, SettingsActivity.class);
+                                        startActivity(intent);
+                                    }
+                                }).show();
+                    }
+                }
+            });
+
+        }
+
+
+    }
+
+    // Menu Button pressed (called from activity)
+    public void onMenuButton(View view) {
+        Log.d("BUTLER", "Function onMenuButton");
+        Intent intent = new Intent(FullscreenActivity.this, SettingsActivity.class);
+        startActivity(intent);
     }
 
     // Speak Button pressed (called from activity)
@@ -158,8 +230,10 @@ public class FullscreenActivity extends AppCompatActivity {
             // TODO Auto-generated method stub
             String status = arg.getStringExtra("status");
 
-            Log.i(LOG_TAG, "StatusReceiver : status='" + status + "'");
-
+            if (!status.equals("LISTENING")) {
+                // We don't log for listening to avoid too much spam as each time the voice level change this function is raised
+                Log.i(LOG_TAG, "StatusReceiver : status='" + status + "'");
+            }
             if (status.equals("LISTENING")) {
                 // Listening action in progress with Google Voice or whatever...
                 // We also get a voice level information

@@ -5,11 +5,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.util.Base64;
@@ -204,10 +206,17 @@ public class ButlerService extends Service {
             /*** Call the Butler REST service from Domogik **************************/
             // TODO : configure
             //String restUrl = "https://192.168.1.50:50000/rest/butler/discuss";
-            String restUrl = "https://78.198.200.93:50000/rest/butler/discuss";
-            final String userAuth = "admin";
-            final String passwordAuth = "milo1919";
-            String user = "Fred";
+            //String restUrl = "https://78.198.200.93:50000/rest/butler/discuss";
+            //final String userAuth = "admin";
+            //final String passwordAuth = "milo1919";
+
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            String adminUrl = settings.getString("domogik_admin_url", "notconfigured");
+            String userAuth = settings.getString("domogik_user", "notconfigured");
+            String passwordAuth = settings.getString("domogik_password", "notconfigured");
+
+            String restUrl = adminUrl + "/rest/butler/discuss";
+            String user = userAuth;
             String source = "ButlerAndroid - " + user;
 
             // Build the data to POST
@@ -236,7 +245,14 @@ public class ButlerService extends Service {
                         // Toast.makeText(context, "Querying REST : OK", Toast.LENGTH_LONG).show();
                     }
                 });
-            } else {
+            } else  if ((httpStatusCode == 401) || (httpStatusCode == 403)) {           // TODO : this is not working ?????
+                Handler h = new Handler(Looper.getMainLooper());
+                h.post(new Runnable() {
+                    public void run() {
+                        Toast.makeText(context, "Authentication error while querying Domogik over Rest.", Toast.LENGTH_LONG).show();                    }
+                });
+            }
+            else {
                 // oups, error !
                 // The handler is needed to be able to Toast
                 Handler h = new Handler(Looper.getMainLooper());

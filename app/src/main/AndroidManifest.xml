@@ -24,9 +24,11 @@
             </intent-filter>
         </activity>
 
-        <service
-            android:name=".ButlerService"/>
+        <service android:name=".ButlerService" />
 
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"></activity>
     </application>
 
 </manifest>

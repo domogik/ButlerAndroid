@@ -149,7 +149,7 @@ public class ButlerGoogleVoice extends Activity implements
         /* NOTICE : this function is not called on some devices... WTF ?
           For exemple, on KW88 Android 5.1 smartwatch, this function is nevel called even if voice recognition is ok...
          */
-        Log.i(LOG_TAG, "onRmsChanged: " + rmsdB);
+        //Log.i(LOG_TAG, "onRmsChanged: " + rmsdB);
 
         int percent = (int)(10*Math.pow(10, ((double)rmsdB/(double)10)));
         int level = percent/5;   // to get 20 levels
