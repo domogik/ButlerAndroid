@@ -1,5 +1,6 @@
 package org.domogik.butler;
 
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,6 +15,8 @@ import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
@@ -74,8 +77,9 @@ public class ButlerService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        Toast.makeText(getBaseContext(), "Butler service started", Toast.LENGTH_SHORT).show();      // TODO : DEL
+        //Toast.makeText(getBaseContext(), "Butler service started", Toast.LENGTH_SHORT).show();      // TODO : DEL
         // TODO : start listening here for keyspotting here ?
+        sendNotification("Butler started", "The butler service is started !");
 
         // Init the receivers
         statusReceiver = new StatusReceiver(this);
@@ -105,6 +109,35 @@ public class ButlerService extends Service {
         super.onDestroy();
     }
 
+
+    /***
+     * Helper to send notifications
+     */
+
+    public void sendNotification(String notificationTitle, String notificationText) {
+        int notificationId = 001;
+        int eventId = 0;
+        String EXTRA_EVENT_ID = "BUTLER EVENT";
+        // Build intent for notification content
+        Intent viewIntent = new Intent(this, FullscreenActivity.class);
+        viewIntent.putExtra(EXTRA_EVENT_ID, eventId);
+        PendingIntent viewPendingIntent =
+                PendingIntent.getActivity(this, 0, viewIntent, 0);
+
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.btn_icon)
+                        .setContentTitle(notificationTitle)
+                        .setContentText(notificationText)
+                        .setContentIntent(viewPendingIntent);
+
+        // Get an instance of the NotificationManager service
+        NotificationManagerCompat notificationManager =
+                NotificationManagerCompat.from(this);
+
+        // Build the notification and issues it with notification manager.
+        notificationManager.notify(notificationId, notificationBuilder.build());
+    }
 
     /***
      * Receivers
