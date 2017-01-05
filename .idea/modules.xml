@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/ButlerAndroid.iml" filepath="$PROJECT_DIR$/ButlerAndroid.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/butlerwear/butlerwear.iml" filepath="$PROJECT_DIR$/butlerwear/butlerwear.iml" />
     </modules>
   </component>
 </project>
