@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.media.AudioManager;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -25,6 +26,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -45,13 +47,20 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import static android.R.attr.password;
+
+// pocketsphinx
+import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
+import edu.cmu.pocketsphinx.Assets;
+import edu.cmu.pocketsphinx.Hypothesis;
+import edu.cmu.pocketsphinx.RecognitionListener;
+import edu.cmu.pocketsphinx.SpeechRecognizer;
+
 
 /**
  * Created by fritz on 28/12/16.
  */
 
-public class ButlerService extends Service {
+public class ButlerService extends Service implements  RecognitionListener {
     private String LOG_TAG = "BUTLER > ButlerService";
     String tag = "ButlerService";
     String status = "WAITING";
@@ -60,12 +69,20 @@ public class ButlerService extends Service {
     Boolean continuousDialog = true;    // TODO : get from config ? Or let it hardcoded ?
     Boolean isTTSMute = false;          // TODO : get from config ? Or let it hardcoded ?
 
+    // PocketSphinx
+    private boolean doVoiceWakeup = false;           // TODO : get from config
+    private static final String KWS_SEARCH = "wakeup";      // TODO : understand why this one is needed....
+    private String KEYPHRASE = "there is no keyphrase defined";
+    private Float threshold = 1e-15f;
+    private SpeechRecognizer recognizer;
+
     // Receivers
     StatusReceiver statusReceiver;
     UserRequestReceiver userRequestReceiver;
     StartListeningUserRequestReceiver startListeningUserRequestReceiver;
     ResponseReceiver responseReceiver;
     MuteReceiver muteReceiver;
+
 
 
     @Override
@@ -93,6 +110,10 @@ public class ButlerService extends Service {
         muteReceiver = new MuteReceiver(this);
         registerReceiver(muteReceiver, new IntentFilter("org.domogik.butler.MuteAction"));
 
+        // Start keyspotting
+        if (doVoiceWakeup) {
+            keySpottingInit();
+        }
 
     }
 
@@ -111,6 +132,176 @@ public class ButlerService extends Service {
 
 
     /***
+     * Keyspotting with PocketSphinx
+     */
+
+
+    public void keySpottingInit() {
+        // TODO
+        KEYPHRASE = "bonjour";
+
+
+        Assets assets;
+        File assetsDir;
+        try {
+            assets = new Assets(this);
+            assetsDir = assets.syncAssets();
+        } catch (IOException e) {
+            // TODO : handle the error
+            Log.e(LOG_TAG, "POCKETSPHINX > Error while loading assets");
+            return;
+        }
+
+        String lang = Locale.getDefault().getLanguage();        // TODO : get from config
+        File acousticModel;
+        File dictionnary;
+        Log.i(LOG_TAG, "POCKETSPHINX > Lang = " + lang);
+        if (lang.equals("fr")) {
+            //acousticModel = new File(assetsDir, "fr/fr-ptm");
+            //dictionnary = new File(assetsDir, "fr/frenchWords62K.dic");
+            acousticModel = new File(assetsDir, "fr/fr-ptm");
+            dictionnary = new File(assetsDir, "fr/frenchWords62K.dic");
+        }
+        else if (lang.equals("en")) {
+            acousticModel = new File(assetsDir, "en/en-us-ptm");
+            dictionnary = new File(assetsDir, "en/cmudict-en-us.dict");
+        }
+        else {
+            Log.e(LOG_TAG, "POCKETSPHINX > Language not recognised : skip recognizer setup");
+            return;
+        }
+        try {
+        recognizer = defaultSetup()
+                .setAcousticModel(acousticModel)
+                .setDictionary(dictionnary)
+
+                // To disable logging of raw audio comment out this call (takes a lot of space on the device)
+                //.setRawLogDir(assetsDir)
+
+                // Threshold to tune for keyphrase to balance between false alarms and misses
+                .setKeywordThreshold(threshold)
+
+                // Use context-independent phonetic search, context-dependent is too slow for mobile
+                .setBoolean("-allphone_ci", true)
+
+                .getRecognizer();
+        } catch (IOException e) {
+            // TODO : handle the error
+            Log.e(LOG_TAG, "POCKETSPHINX > Error while doing the setup of the recognizer (PocketSPhinx)");
+            return;
+        }
+
+        recognizer.addListener(this);
+
+        /** In your application you might not need to add all those searches.
+         * They are added here for demonstration. You can leave just one.
+         */
+
+        // Create keyword-activation search.
+        recognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE.toLowerCase());
+
+        // TODO : move in another function
+        recognizer.startListening(KWS_SEARCH, 100000);
+/*
+        recognizer = defaultSetup()
+                .setAcousticModel(new File(assetsDir, "en-us-ptm"))
+                .setDictionary(new File(assetsDir, "cmudict-en-us.dict"))
+                .setRawLogDir(assetsDir).setKeywordThreshold(1e-20f)
+                .getRecognizer();
+        recognizer.addListener(this);
+        */
+    }
+
+
+
+
+
+    // Pocketsphinx functions ////////////////////////////////////////////////////////
+
+    @Override
+    public void onPartialResult(Hypothesis hypothesis) {
+        /* In partial result we get quick updates about current hypothesis. In
+           keyword spotting mode we can react here, in other modes we need to wait
+           for final result in onResult.
+         */
+        if (hypothesis == null)
+            return;
+        Log.i(LOG_TAG, "POCKETSPHINX > Function onPartialResult : " + hypothesis.getHypstr());
+
+        String text = hypothesis.getHypstr().toLowerCase();
+        if (text.equals(KEYPHRASE.toLowerCase())) {
+            // TODO startDialog();
+        }
+
+    }
+
+    @Override
+    public void onResult(Hypothesis hypothesis) {
+        /* This callback is called when we stop the recognizer.
+         */
+        if (hypothesis == null)
+            return;
+        Log.i(LOG_TAG, "POCKETSPHINX > Function onResult : " + hypothesis.getHypstr());
+
+        // In this application, this function is not used as we process the result in onPartialResult function
+        /*
+        if (hypothesis != null) {
+            String text = hypothesis.getHypstr();
+        }
+        */
+    }
+
+    @Override
+    public void onBeginningOfSpeech() {
+    }
+
+    @Override
+    public void onEndOfSpeech() {
+        /* We stop recognizer here to get a final result
+           This function is called on end of speech
+         */
+        Log.i(LOG_TAG, "POCKETSPHINX > Function onEndOfSpeech");
+        // Restart pocketsphinx listening
+        // TODO psStartListening();
+    }
+
+    @Override
+    public void onError(Exception error) {
+        Log.d(LOG_TAG, "POCKETSPHINX > Function onError");
+        Toast.makeText(getApplicationContext(), "PocketSphinx error : " + error.getMessage(), Toast.LENGTH_SHORT).show();
+        // TODO : relaunch listening ?????
+    }
+
+    @Override
+    public void onTimeout() {
+        Log.d(LOG_TAG, "POCKETSPHINX > Function onTimeout");
+        Toast.makeText(getApplicationContext(), "Timeout", Toast.LENGTH_SHORT).show();
+        // Restart pocketsphinx listening
+        // TODO psStartListening();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*****************************************************************************
      * Helper to send notifications
      */
 
