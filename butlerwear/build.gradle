@@ -4,9 +4,10 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
+    publishNonDefault true
 
     defaultConfig {
-        applicationId "org.domogik.butlerwear"
+        applicationId "org.domogik.butler"
         minSdkVersion 20
         targetSdkVersion 25
         versionCode 1
