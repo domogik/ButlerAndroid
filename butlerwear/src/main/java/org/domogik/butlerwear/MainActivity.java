@@ -22,6 +22,7 @@ public class MainActivity extends WearableActivity {
     private BoxInsetLayout mContainerView;
     private TextView mTextView;
     private TextView mClockView;
+    private static String LOG_TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,13 +54,16 @@ public class MainActivity extends WearableActivity {
     }
 
     private void updateDisplay() {
+        Log.d(LOG_TAG, "updateDisplay");
         if (isAmbient()) {
+            Log.d(LOG_TAG, "isAmbient");
             mContainerView.setBackgroundColor(getResources().getColor(android.R.color.black));
             mTextView.setTextColor(getResources().getColor(android.R.color.white));
             mClockView.setVisibility(View.VISIBLE);
 
             mClockView.setText(AMBIENT_DATE_FORMAT.format(new Date()));
         } else {
+            Log.d(LOG_TAG, "No more isAmbient");
             mContainerView.setBackground(null);
             mTextView.setTextColor(getResources().getColor(android.R.color.black));
             mClockView.setVisibility(View.GONE);
@@ -67,23 +71,32 @@ public class MainActivity extends WearableActivity {
     }
 
     public void updateTheRequest(final String t) {
+        Log.d(LOG_TAG, "updateTheRequest");
         MainActivity.this.runOnUiThread(new Runnable() {
             public void run() {
                 TextView request = (TextView) findViewById(R.id.text);
                 request.setText(capitalize(t));
+                Log.d(LOG_TAG, "updateTheRequest runOnUiThread");
             }
         });
     }
 
     public static String capitalize(String s) {
         // Set the first letter to be a UPPER one
-        if(s == null) return null;
-        if(s.length() == 1) {
+        Log.d(LOG_TAG, "capitalize");
+        if (s == null){
+            Log.d(LOG_TAG, "s == null");
+            return null;
+        }
+        if (s.length() == 1) {
+            Log.d(LOG_TAG, "s.length() == 1");
             return s.toUpperCase();
         }
-        if(s.length() > 1){
-            return s.substring(0,1).toUpperCase() + s.substring(1);
-        } return "";
+        if (s.length() > 1) {
+            Log.d(LOG_TAG, "s.length() > 1");
+            return s.substring(0, 1).toUpperCase() + s.substring(1);
+        }
+        return "";
     }
 
     /****
@@ -96,7 +109,9 @@ public class MainActivity extends WearableActivity {
            This Receiver may be found also on some activities to be displayed
          */
         private Context context;
+
         public UserRequestReceiverForGUI(Context context) {
+            Log.i(LOG_TAG, "UserRequestReceiverForGUI");
             this.context = context;
         }
 
@@ -105,7 +120,7 @@ public class MainActivity extends WearableActivity {
         @Override
         public void onReceive(Context context, Intent arg) {
             // TODO Auto-generated method stub
-            Log.i(LOG_TAG, "UserRequestReceiverForGUI");
+            Log.i(LOG_TAG, "UserRequestReceiverForGUI onReceive");
             String text = arg.getStringExtra("text");
             //Toast.makeText(context, "User request received : " + text, Toast.LENGTH_LONG).show(); // TODO DEL
             // TODO : add try..catch ?
