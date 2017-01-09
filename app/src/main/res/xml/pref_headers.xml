@@ -7,4 +7,9 @@
         android:icon="@drawable/ic_info_black_24dp"
         android:title="@string/pref_header_domogik" />
 
+    <header
+        android:fragment="org.domogik.butler.SettingsActivity$KeyspottingPreferenceFragment"
+        android:icon="@drawable/ic_info_black_24dp"
+        android:title="@string/pref_header_keyspotting" />
+
 </preference-headers>

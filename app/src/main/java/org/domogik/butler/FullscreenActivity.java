@@ -99,15 +99,6 @@ public class FullscreenActivity extends AppCompatActivity {
         }
         //Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
 
-        /*
-        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
-                | View.SYSTEM_UI_FLAG_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-                */
-
         // Buttons
         speakButton = (ImageButton)findViewById(R.id.speakbutton);
         muteButton = (ImageButton)findViewById(R.id.muteButton);
@@ -156,23 +147,33 @@ public class FullscreenActivity extends AppCompatActivity {
 
     }
 
+    public void onDestroy() {
+        unregisterReceiver(statusReceiverForGUI);
+        unregisterReceiver(userRequestReceiverForGUI);
+        unregisterReceiver(responseReceiverForGUI);
+        unregisterReceiver(muteStatusReceiverForGUI);
+
+        super.onDestroy();
+    }
+
+
     // Menu Button pressed (called from activity)
     public void onMenuButton(View view) {
-        Log.d("BUTLER", "Function onMenuButton");
+        Log.i("BUTLER", "Function onMenuButton");
         Intent intent = new Intent(FullscreenActivity.this, SettingsActivity.class);
         startActivity(intent);
     }
 
     // Speak Button pressed (called from activity)
     public void onSpeakButton(View view) {
-        Log.d("BUTLER", "Function onSpeakButton");
+        Log.i("BUTLER", "Function onSpeakButton");
         Intent i = new Intent("org.domogik.butler.StartListeningUserRequest");
         sendBroadcast(i);
     }
 
     // Mute/unmute Button pressed (called from activity)
     public void onMuteButton(View view) {
-        Log.d("BUTLER", "Function onMuteButton");
+        Log.i("BUTLER", "Function onMuteButton");
         Intent i = new Intent("org.domogik.butler.MuteAction");
         sendBroadcast(i);
         // TODO : handle a MuteStatus sent from the service and change the button background with the appropriate value
@@ -234,8 +235,8 @@ public class FullscreenActivity extends AppCompatActivity {
                 // We don't log for listening to avoid too much spam as each time the voice level change this function is raised
                 Log.i(LOG_TAG, "StatusReceiver : status='" + status + "'");
             }
-            if (status.equals("LISTENING")) {
-                // Listening action in progress with Google Voice or whatever...
+            if ((status.equals("LISTENING")) || (status.equals("WANT_LISTENING_AGAIN"))) {
+                // Listening action in progress with Google Voice or whatever... or a listening action will be soon initiated (continuous speaking)
                 // We also get a voice level information
                 int level = arg.getIntExtra("voicelevel", 0);  // 0 = default value
                 int buttonImg = getResources().getIdentifier("btn_icon_mic_" + level, "drawable", getPackageName());

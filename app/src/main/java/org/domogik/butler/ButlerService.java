@@ -60,21 +60,21 @@ import edu.cmu.pocketsphinx.SpeechRecognizer;
  * Created by fritz on 28/12/16.
  */
 
-public class ButlerService extends Service implements  RecognitionListener {
+public class ButlerService extends Service {
     private String LOG_TAG = "BUTLER > ButlerService";
-    String tag = "ButlerService";
     String status = "WAITING";
 
+    Context context;
+
     // Configuration
-    Boolean continuousDialog = true;    // TODO : get from config ? Or let it hardcoded ?
+    SharedPreferences settings;
+    SharedPreferences.OnSharedPreferenceChangeListener listener;
+    Boolean continuousDialog = false;    // TODO : get from config ? Or let it hardcoded ?
     Boolean isTTSMute = false;          // TODO : get from config ? Or let it hardcoded ?
 
-    // PocketSphinx
-    private boolean doVoiceWakeup = false;           // TODO : get from config
-    private static final String KWS_SEARCH = "wakeup";      // TODO : understand why this one is needed....
-    private String KEYPHRASE = "there is no keyphrase defined";
-    private Float threshold = 1e-15f;
-    private SpeechRecognizer recognizer;
+    // KeySpotting (PocketSphinx)
+    private boolean doVoiceWakeup = false;
+    ButlerPocketSphinx pocketSphinx;
 
     // Receivers
     StatusReceiver statusReceiver;
@@ -93,6 +93,7 @@ public class ButlerService extends Service implements  RecognitionListener {
     @Override
     public void onCreate() {
         super.onCreate();
+        this.context = this;
 
         //Toast.makeText(getBaseContext(), "Butler service started", Toast.LENGTH_SHORT).show();      // TODO : DEL
         // TODO : start listening here for keyspotting here ?
@@ -110,11 +111,41 @@ public class ButlerService extends Service implements  RecognitionListener {
         muteReceiver = new MuteReceiver(this);
         registerReceiver(muteReceiver, new IntentFilter("org.domogik.butler.MuteAction"));
 
-        // Start keyspotting
+        // Preferences listener
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+        registerPreferenceListener();
+
+        // Init keyspotting
+        doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
+        pocketSphinx = new ButlerPocketSphinx();
         if (doVoiceWakeup) {
-            keySpottingInit();
+            pocketSphinx.start(this);
         }
 
+
+    }
+
+
+    private void registerPreferenceListener()
+    {
+        listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+
+                if (key.equals("keyspotting_activated")) {
+                    doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
+                    Log.i(LOG_TAG, "Preferences : keyspotting_activated changed ! New value = " + doVoiceWakeup);
+                    if (doVoiceWakeup) {
+                        pocketSphinx.start(context);
+                    }
+                    else {
+                        pocketSphinx.stop();
+                    }
+
+                }
+            }
+        };
+
+        settings.registerOnSharedPreferenceChangeListener(listener);
     }
 
     @Override
@@ -125,172 +156,14 @@ public class ButlerService extends Service implements  RecognitionListener {
 
     @Override
     public void onDestroy() {
-        // TODO : stop listening for keyspotting
+        unregisterReceiver(statusReceiver);
         unregisterReceiver(userRequestReceiver);
+        unregisterReceiver(startListeningUserRequestReceiver);
+        unregisterReceiver(responseReceiver);
+        unregisterReceiver(muteReceiver);
+
         super.onDestroy();
     }
-
-
-    /***
-     * Keyspotting with PocketSphinx
-     */
-
-
-    public void keySpottingInit() {
-        // TODO
-        KEYPHRASE = "bonjour";
-
-
-        Assets assets;
-        File assetsDir;
-        try {
-            assets = new Assets(this);
-            assetsDir = assets.syncAssets();
-        } catch (IOException e) {
-            // TODO : handle the error
-            Log.e(LOG_TAG, "POCKETSPHINX > Error while loading assets");
-            return;
-        }
-
-        String lang = Locale.getDefault().getLanguage();        // TODO : get from config
-        File acousticModel;
-        File dictionnary;
-        Log.i(LOG_TAG, "POCKETSPHINX > Lang = " + lang);
-        if (lang.equals("fr")) {
-            //acousticModel = new File(assetsDir, "fr/fr-ptm");
-            //dictionnary = new File(assetsDir, "fr/frenchWords62K.dic");
-            acousticModel = new File(assetsDir, "fr/fr-ptm");
-            dictionnary = new File(assetsDir, "fr/frenchWords62K.dic");
-        }
-        else if (lang.equals("en")) {
-            acousticModel = new File(assetsDir, "en/en-us-ptm");
-            dictionnary = new File(assetsDir, "en/cmudict-en-us.dict");
-        }
-        else {
-            Log.e(LOG_TAG, "POCKETSPHINX > Language not recognised : skip recognizer setup");
-            return;
-        }
-        try {
-        recognizer = defaultSetup()
-                .setAcousticModel(acousticModel)
-                .setDictionary(dictionnary)
-
-                // To disable logging of raw audio comment out this call (takes a lot of space on the device)
-                //.setRawLogDir(assetsDir)
-
-                // Threshold to tune for keyphrase to balance between false alarms and misses
-                .setKeywordThreshold(threshold)
-
-                // Use context-independent phonetic search, context-dependent is too slow for mobile
-                .setBoolean("-allphone_ci", true)
-
-                .getRecognizer();
-        } catch (IOException e) {
-            // TODO : handle the error
-            Log.e(LOG_TAG, "POCKETSPHINX > Error while doing the setup of the recognizer (PocketSPhinx)");
-            return;
-        }
-
-        recognizer.addListener(this);
-
-        /** In your application you might not need to add all those searches.
-         * They are added here for demonstration. You can leave just one.
-         */
-
-        // Create keyword-activation search.
-        recognizer.addKeyphraseSearch(KWS_SEARCH, KEYPHRASE.toLowerCase());
-
-        // TODO : move in another function
-        recognizer.startListening(KWS_SEARCH, 100000);
-/*
-        recognizer = defaultSetup()
-                .setAcousticModel(new File(assetsDir, "en-us-ptm"))
-                .setDictionary(new File(assetsDir, "cmudict-en-us.dict"))
-                .setRawLogDir(assetsDir).setKeywordThreshold(1e-20f)
-                .getRecognizer();
-        recognizer.addListener(this);
-        */
-    }
-
-
-
-
-
-    // Pocketsphinx functions ////////////////////////////////////////////////////////
-
-    @Override
-    public void onPartialResult(Hypothesis hypothesis) {
-        /* In partial result we get quick updates about current hypothesis. In
-           keyword spotting mode we can react here, in other modes we need to wait
-           for final result in onResult.
-         */
-        if (hypothesis == null)
-            return;
-        Log.i(LOG_TAG, "POCKETSPHINX > Function onPartialResult : " + hypothesis.getHypstr());
-
-        String text = hypothesis.getHypstr().toLowerCase();
-        if (text.equals(KEYPHRASE.toLowerCase())) {
-            // TODO startDialog();
-        }
-
-    }
-
-    @Override
-    public void onResult(Hypothesis hypothesis) {
-        /* This callback is called when we stop the recognizer.
-         */
-        if (hypothesis == null)
-            return;
-        Log.i(LOG_TAG, "POCKETSPHINX > Function onResult : " + hypothesis.getHypstr());
-
-        // In this application, this function is not used as we process the result in onPartialResult function
-        /*
-        if (hypothesis != null) {
-            String text = hypothesis.getHypstr();
-        }
-        */
-    }
-
-    @Override
-    public void onBeginningOfSpeech() {
-    }
-
-    @Override
-    public void onEndOfSpeech() {
-        /* We stop recognizer here to get a final result
-           This function is called on end of speech
-         */
-        Log.i(LOG_TAG, "POCKETSPHINX > Function onEndOfSpeech");
-        // Restart pocketsphinx listening
-        // TODO psStartListening();
-    }
-
-    @Override
-    public void onError(Exception error) {
-        Log.d(LOG_TAG, "POCKETSPHINX > Function onError");
-        Toast.makeText(getApplicationContext(), "PocketSphinx error : " + error.getMessage(), Toast.LENGTH_SHORT).show();
-        // TODO : relaunch listening ?????
-    }
-
-    @Override
-    public void onTimeout() {
-        Log.d(LOG_TAG, "POCKETSPHINX > Function onTimeout");
-        Toast.makeText(getApplicationContext(), "Timeout", Toast.LENGTH_SHORT).show();
-        // Restart pocketsphinx listening
-        // TODO psStartListening();
-    }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -349,22 +222,34 @@ public class ButlerService extends Service implements  RecognitionListener {
         @Override
         public void onReceive(Context context, Intent arg) {
             // TODO Auto-generated method stub
-            Log.i(LOG_TAG, "StatusReceiver");
+
             status = arg.getStringExtra("status");
-
-
-            if (status.equals("LISTENING_ERROR")) {
-                status = "WAITING";
+            if (!status.equals("LISTENING")) {
+                // We don't log for listening to avoid too much spam as each time the voice level change this function is raised
+                Log.i(LOG_TAG, "StatusReceiver");
             }
-            else if (status.equals("SPEAKING_DONE")) {
-                status = "WAITING";
+
+            if ((status.equals("LISTENING_ERROR")) || (status.equals("SPEAKING_DONE"))) {
+                // An input dialog has failed (most of the time this is related to somehting not understood by google voice or the speaking of a response is finished.
                 if (continuousDialog == true) {
+                    // We want the discussion to continue without needed to click or do keyspotting again
+                    status = "WANT_LISTENING_AGAIN";
+                    Log.i(LOG_TAG, "Status set to " + status);
+                    Intent i = new Intent("org.domogik.butler.Status");
+                    i.putExtra("status", status);
+                    context.sendBroadcast(i);
+
                     // If the continuous dialog is set, when we finish to speak, we start to do voice recognition once
-                    Intent i = new Intent("org.domogik.butler.StartListeningUserRequest");
-                    sendBroadcast(i);
+                    Intent i2 = new Intent("org.domogik.butler.StartListeningUserRequest");
+                    sendBroadcast(i2);
                 }
                 else {
-                    // do nothing :)
+                    // we restart to wait for some event (keyspotting, click on button)
+                    status = "WAITING";
+                    Log.i(LOG_TAG, "Status set to " + status);
+                    Intent i = new Intent("org.domogik.butler.Status");
+                    i.putExtra("status", status);
+                    context.sendBroadcast(i);
                 }
             }
 
@@ -389,8 +274,13 @@ public class ButlerService extends Service implements  RecognitionListener {
         public void onReceive(Context context, Intent arg) {
             // TODO Auto-generated method stub
             Log.i(LOG_TAG, "StartListeningUserRequestReceiver");
-            if (status.equals("WAITING")) {
+            if ((status.equals("WAITING")) || (status.equals("WANT_LISTENING_AGAIN"))) {
                 // We only allow to start google voice recognition when the service is not already doing something like a voice recognition process or a processing or speaking process
+
+                // first we stop PocketSphinx in case it is listening!
+                pocketSphinx.stop();
+
+                // Then we start google voice recognition
                 gv = new ButlerGoogleVoice();
                 gv.startVoiceRecognition(context);
             }
@@ -434,7 +324,7 @@ public class ButlerService extends Service implements  RecognitionListener {
             //final String userAuth = "admin";
             //final String passwordAuth = "milo1919";
 
-            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            // TODO: DEL // SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             String adminUrl = settings.getString("domogik_admin_url", "notconfigured");
             String userAuth = settings.getString("domogik_user", "notconfigured");
             String passwordAuth = settings.getString("domogik_password", "notconfigured");
@@ -611,24 +501,6 @@ public class ButlerService extends Service implements  RecognitionListener {
                 i.putExtra("status", "SPEAKING_DONE");
                 context.sendBroadcast(i);
 
-            /* TODO
-            if (doContinuousSpeech) {
-                // We restart Google voice listening
-                // we force the sleeping status to allow gv to start
-                setStatus(IS_SLEEPING);
-                // we can't call directly this function from here...
-                // so we sendBroadcat to main actibity to make it restart gv
-                //gvStartListening();
-                Intent i = new Intent("domogik.domodroid.DO_CONTINUOUS_SPEECH");
-                sendBroadcast(i);
-
-            }
-            else {
-                // We can restart pocketsphinx listener :)
-                psStartListening();
-
-            }
-            */
             }
         };
     }

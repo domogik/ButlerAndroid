@@ -10,7 +10,9 @@ List of the status
     LISTENING
     
     LISTENING_ERROR                # Raised if an error occured during voice recognition
-    \_ WAITING
+    \_ WANT_LISTENING_AGAIN        # For continuous speaking
+       \_ LISTENING
+    \_ WAITING                     # For no continuous speaking
  
     LISTENING_DONE                 #
     \_ REQUESTING_THE_BUTLER       # These 2 are basically the same
@@ -19,5 +21,7 @@ List of the status
     \_ SPEAKING                    # These 2 are basically the same
     
     SPEAKING_DONE
-    \_ WAITING
+    \_ WANT_LISTENING_AGAIN        # For continuous speaking
+       \_ LISTENING
+    \_ WAITING                     # For no continuous speaking
 

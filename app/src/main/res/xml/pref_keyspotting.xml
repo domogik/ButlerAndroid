@@ -1,0 +1,24 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="keyspotting_activated"
+        android:summary="@string/pref_summary_keyspotting_activated"
+        android:title="@string/pref_keyspotting_activated"/>
+
+    <EditTextPreference
+        android:key="keyspotting_keyphrase"
+        android:defaultValue="@string/pref_default_keyspotting_keyphrase"
+        android:summary="@string/pref_summary_keyspotting_keyphrase"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_keyspotting_keyphrase" />
+
+    <ListPreference
+        android:key="keyspotting_threshold"
+        android:entries="@array/pref_keyspotting_threshold"
+        android:summary="@string/pref_summary_keyspotting_threshold"
+        android:entryValues="@array/pref_keyspotting_threshold_values"
+        android:title="@string/pref_keyspotting_threshold" />
+</PreferenceScreen>
