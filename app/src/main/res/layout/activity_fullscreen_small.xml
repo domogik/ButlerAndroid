@@ -1,0 +1,145 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0099cc"
+    tools:context="org.domogik.butler.FullscreenActivity">
+
+    <!-- The primary full-screen view. This can be replaced with whatever view
+         is needed to present your content, e.g. VideoView, SurfaceView,
+         TextureView, etc. -->
+    <TextView
+        android:id="@+id/fullscreen_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:keepScreenOn="true"
+        android:text="@string/dummy_content"
+        android:textColor="#333333"
+        android:textSize="50sp"
+        android:textStyle="bold"
+        android:background="#000000" />
+
+    <!-- This FrameLayout insets its children based on system windows using
+         android:fitsSystemWindows. -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_weight="1">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" >
+
+                    <TextView
+                                android:text="@string/request_default"
+                                android:textColor="#ffffff"
+                                android:gravity="center"
+                                android:textSize="30dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="20dp"
+                                android:layout_marginLeft="20dp"
+                                android:layout_marginBottom="20dp"
+                                android:id="@+id/request"
+                                android:layout_weight="1" />
+
+                    <TextView
+                                android:text="@string/response_default"
+                                android:textColor="#ffffff"
+                                android:gravity="center"
+                                android:textSize="30dp"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginRight="20dp"
+                                android:layout_marginLeft="20dp"
+                                android:id="@+id/response"
+                                android:layout_weight="1" />
+
+                </LinearLayout>
+            </ScrollView>
+
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_weight="0">
+
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"/>
+
+                <ImageButton
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:id="@+id/menuButton"
+                    android:onClick="onMenuButton"
+                    android:background="@drawable/menu"
+                    android:focusable="false"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:layout_weight="0" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"/>
+
+                <ImageButton
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:id="@+id/speakbutton"
+                    android:onClick="onSpeakButton"
+                    android:background="@drawable/btn_icon"
+                    android:focusable="false"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:layout_weight="0" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"/>
+
+                <ImageButton
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:id="@+id/muteButton"
+                    android:onClick="onMuteButton"
+                    android:background="@drawable/unmute"
+                    android:focusable="false"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:layout_weight="0" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"/>
+
+
+
+            </LinearLayout>
+        </LinearLayout>
+
+    </FrameLayout>
+
+</FrameLayout>
+

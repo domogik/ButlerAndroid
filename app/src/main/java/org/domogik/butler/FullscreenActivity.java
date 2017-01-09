@@ -40,6 +40,8 @@ public class FullscreenActivity extends AppCompatActivity {
     // Buttons
     ImageButton speakButton;
     ImageButton muteButton;
+    boolean isMuteButtonDisplayed = false; // the mute button is displayed only on small screens
+
     // Google voice for STT
     private ButlerGoogleVoice Gv;
 
@@ -66,7 +68,6 @@ public class FullscreenActivity extends AppCompatActivity {
         Intent butlerService = new Intent(FullscreenActivity.this, ButlerService.class);
         startService(butlerService);
 
-        setContentView(R.layout.activity_fullscreen);
 
         // First, check if the user have the permission to use the microphone
         // This is only used for Android >= 6
@@ -79,7 +80,6 @@ public class FullscreenActivity extends AppCompatActivity {
         }
 
         // Switch screen mode
-
         mContentView = findViewById(R.id.fullscreen_content);
         screenSize = getResources().getConfiguration().screenLayout &
                 Configuration.SCREENLAYOUT_SIZE_MASK;
@@ -87,13 +87,18 @@ public class FullscreenActivity extends AppCompatActivity {
         String toastMsg;
         switch(screenSize) {
             case Configuration.SCREENLAYOUT_SIZE_LARGE:
+                setContentView(R.layout.activity_fullscreen);
                 toastMsg = "Large screen";
                 break;
             case Configuration.SCREENLAYOUT_SIZE_NORMAL:
+                setContentView(R.layout.activity_fullscreen);
                 toastMsg = "Normal screen";
                 break;
             case Configuration.SCREENLAYOUT_SIZE_SMALL:
+                setContentView(R.layout.activity_fullscreen_small);
+                isMuteButtonDisplayed = true;
                 toastMsg = "Small screen";
+                // change the activity used !
                 mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
                         | View.SYSTEM_UI_FLAG_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
@@ -103,13 +108,16 @@ public class FullscreenActivity extends AppCompatActivity {
 
                 break;
             default:
+                setContentView(R.layout.activity_fullscreen);
                 toastMsg = "Screen size is neither large, normal or small";
         }
         //Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
 
         // Buttons
         speakButton = (ImageButton)findViewById(R.id.speakbutton);
-        muteButton = (ImageButton)findViewById(R.id.muteButton);
+        if (isMuteButtonDisplayed) {
+            muteButton = (ImageButton)findViewById(R.id.muteButton);
+        }
 
         // Init the receivers
         statusReceiverForGUI = new StatusReceiverForGUI(this);
@@ -373,11 +381,15 @@ public class FullscreenActivity extends AppCompatActivity {
             Boolean isMute = arg.getBooleanExtra("mute", false);
 
             if (isMute) {
-                muteButton.setBackgroundResource(R.drawable.mute);
+                if (isMuteButtonDisplayed) {
+                    muteButton.setBackgroundResource(R.drawable.mute);
+                }
                 mOptionsMenu.findItem(R.id.action_mute).setIcon(R.drawable.mute);
             }
             else {
-                muteButton.setBackgroundResource(R.drawable.unmute);
+                if (isMuteButtonDisplayed) {
+                    muteButton.setBackgroundResource(R.drawable.unmute);
+                }
                 mOptionsMenu.findItem(R.id.action_mute).setIcon(R.drawable.unmute);
             }
         }
