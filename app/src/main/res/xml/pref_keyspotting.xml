@@ -7,6 +7,13 @@
         android:summary="@string/pref_summary_keyspotting_activated"
         android:title="@string/pref_keyspotting_activated"/>
 
+    <ListPreference
+        android:key="keyspotting_lang"
+        android:entries="@array/pref_keyspotting_lang"
+        android:summary="@string/pref_summary_keyspotting_lang"
+        android:entryValues="@array/pref_keyspotting_lang_values"
+        android:title="@string/pref_keyspotting_lang" />
+
     <EditTextPreference
         android:key="keyspotting_keyphrase"
         android:defaultValue="@string/pref_default_keyspotting_keyphrase"

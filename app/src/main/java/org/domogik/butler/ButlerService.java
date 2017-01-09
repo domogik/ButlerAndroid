@@ -145,6 +145,20 @@ public class ButlerService extends Service {
                     }
 
                 }
+                else if ((key.equals("keyspotting_lang")) || (key.equals("keyspotting_keyphrase")) || (key.equals("keyspotting_threshold"))) {
+                    doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
+                    Log.i(LOG_TAG, "Preferences : (keyspotting_lang || keyspotting_keyphrase || keyspotting_threshold) changed ! => Reloading the pocketSphinx engine");
+                    if (doVoiceWakeup) {
+                        pocketSphinx.init(context);
+                        pocketSphinx.stop();
+                        pocketSphinx.start();
+                    }
+                    else {
+                        // do nothing
+                    }
+
+                }
+
             }
         };
 

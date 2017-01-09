@@ -1,10 +1,15 @@
 <resources>
     <string name="app_name">Butler</string>
 
+    <!-- layout -->
     <string name="dummy_content">~DEV beta1~</string>
     <string name="request_default">Click on the bottom button...</string>
     <string name="response_default"></string>
     <string name="title_activity_settings">Settings</string>
+
+    <!-- menu -->
+    <string name="menu_main">Settings</string>
+    <string name="menu_mute">Mute/unmute</string>
 
     <!-- Strings related to Settings -->
     <string name="pref_header_domogik">Domogik</string>
@@ -26,6 +31,9 @@
 
     <string name="pref_keyspotting_activated">Activate the keyphrase wake up</string>
     <string name="pref_summary_keyspotting_activated">If checked, you will be able to wake up the voice recognition by speaking the keyphrase.</string>
+
+    <string name="pref_keyspotting_lang">Language</string>
+    <string name="pref_summary_keyspotting_lang">Choose the input language.</string>
 
     <string name="pref_keyspotting_keyphrase">Keysphrase</string>
     <string name="pref_default_keyspotting_keyphrase"></string>

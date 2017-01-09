@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <string-array name="pref_keyspotting_lang">
+        <item name="fr">fr</item>
+        <item name="en">en</item>
+    </string-array>
+    <string-array name="pref_keyspotting_lang_values">
+        <item name="fr">fr</item>
+        <item name="en">en</item>
+    </string-array>
+
     <string-array name="pref_keyspotting_threshold">
         <item name="10">10</item>
         <item name="15">15</item>

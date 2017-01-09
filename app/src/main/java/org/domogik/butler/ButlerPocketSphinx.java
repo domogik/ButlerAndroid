@@ -145,7 +145,8 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
             return;
         }
 
-        String lang = Locale.getDefault().getLanguage();        // TODO : get from config
+        //String lang = Locale.getDefault().getLanguage();        // TODO : get from config
+        String lang = settings.getString("keyspotting_lang", "en");
         File acousticModel;
         File dictionnary;
         Log.i(LOG_TAG, "POCKETSPHINX > Lang = " + lang);

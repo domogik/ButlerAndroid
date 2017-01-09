@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+
+    <item android:title="@string/menu_mute"
+        android:icon="@drawable/unmute"
+        app:showAsAction="always"
+        android:id="@+id/action_mute" />
+    <item android:title="@string/menu_main"
+        app:showAsAction="always"
+        android:icon="@drawable/menu"
+        android:id="@+id/action_settings" />
+</menu>

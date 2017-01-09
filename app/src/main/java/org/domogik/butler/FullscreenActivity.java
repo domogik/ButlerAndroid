@@ -20,6 +20,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
@@ -40,6 +42,9 @@ public class FullscreenActivity extends AppCompatActivity {
     ImageButton muteButton;
     // Google voice for STT
     private ButlerGoogleVoice Gv;
+
+    // screen size
+    int screenSize;
 
     // Receivers
     StatusReceiverForGUI statusReceiverForGUI;
@@ -73,7 +78,7 @@ public class FullscreenActivity extends AppCompatActivity {
         // Switch screen mode
 
         mContentView = findViewById(R.id.fullscreen_content);
-        int screenSize = getResources().getConfiguration().screenLayout &
+        screenSize = getResources().getConfiguration().screenLayout &
                 Configuration.SCREENLAYOUT_SIZE_MASK;
 
         String toastMsg;
@@ -145,6 +150,37 @@ public class FullscreenActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        //ajoute les entrées de menu_test à l'ActionBar
+
+        switch(screenSize) {
+            case Configuration.SCREENLAYOUT_SIZE_SMALL:
+                // no menu :)
+                break;
+            default:
+                getMenuInflater().inflate(R.menu.main, menu);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_mute:
+                Intent i = new Intent("org.domogik.butler.MuteAction");
+                sendBroadcast(i);
+                // TODO : handle a MuteStatus sent from the service and change the button background with the appropriate value
+                return true;
+            case R.id.action_settings:
+                Intent intent = new Intent(FullscreenActivity.this, SettingsActivity.class);
+                startActivity(intent);
+                return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     public void onDestroy() {
