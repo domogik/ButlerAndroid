@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Butler</string>
 
-    <string name="dummy_content">~DEV~</string>
+    <string name="dummy_content">~DEV beta1~</string>
     <string name="request_default">Click on the bottom button...</string>
     <string name="response_default"></string>
     <string name="title_activity_settings">Settings</string>

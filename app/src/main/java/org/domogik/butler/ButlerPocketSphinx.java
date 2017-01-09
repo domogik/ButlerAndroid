@@ -81,10 +81,13 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
     private boolean isRecognizerOK = false;
     private boolean doVoiceWakeUp = false;
 
+    // Config
+    SharedPreferences settings;
+
     // Handler for delayed commands
     Handler handler;
 
-    public void start(Context context) {
+    public void init(Context context) {
         this.context = context;
         Log.i(LOG_TAG, "ButlerPocketSphinx > start");
         // Init the receivers
@@ -93,18 +96,11 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
         context.registerReceiver(statusReceiver, new IntentFilter("org.domogik.butler.Status"));
 
         // Init keyspotting
-        keySpottingInit();
+        //keySpottingInit();
+        //startKeySpotting();
 
     }
 
-    public void stop() {
-        Log.i(LOG_TAG, "ButlerPocketSphinx > stop");
-        stopKeySpotting();
-        if (recognizer != null) {
-            recognizer.cancel();
-            recognizer.shutdown();
-        }
-    }
 
     @Override
     public void onDestroy() {
@@ -126,12 +122,17 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
      */
 
 
-    public void keySpottingInit() {
-        Log.i(LOG_TAG, "ButlerPocketSphinx > keySpottingInit");
+    public void start() {
+        Log.i(LOG_TAG, "ButlerPocketSphinx > start");
 
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        settings = PreferenceManager.getDefaultSharedPreferences(context);
         doVoiceWakeUp = settings.getBoolean("keyspotting_activated", false);
         KEYPHRASE = settings.getString("keyspotting_keyphrase", "");
+
+        if (!doVoiceWakeUp) {
+            Log.w(LOG_TAG, "BUTLER > Start : it seems that configuration changed and keyspotting is no more activated... stopping");
+            return;
+        }
 
         Assets assets;
         File assetsDir;
@@ -214,14 +215,16 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
             isRecognizerOK = false;
 
         }
-
         // Start listening :)
         startKeySpotting();
     }
 
 
     public void startKeySpotting() {
-        if (!isRecognizerOK) {
+        // Init keyspotting
+        //keySpottingInit();
+
+    if (!isRecognizerOK) {
             Log.w(LOG_TAG, "BUTLER > Start keyspotting : not starting keypotting as the recognizer is not valid!");
             return;
         }
@@ -238,20 +241,16 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        // TODO  :find what is blocking using Audalyzer from Google Play.
-                        recognizer.startListening(KWS_SEARCH, 100000);
+                        // We check that the configuration have not been changed (else on the timeout/no match, it will crash
+                        doVoiceWakeUp = settings.getBoolean("keyspotting_activated", false);
+                        Log.i(LOG_TAG, "doVWU=" + doVoiceWakeUp);
+                        Log.i(LOG_TAG, "status=" + status);
+                        if (doVoiceWakeUp) {
+                            recognizer.startListening(KWS_SEARCH, 100000);
+                        }
+                        else {
+                            Log.w(LOG_TAG, "BUTLER > Start keyspotting : it seems that configuration changed and keyspotting is no more activated... stopping");
+                        }
                     }
                 }, 300);
                 // TODO : replace the delay by a loop of 5 try with a smaller delay
@@ -266,12 +265,32 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
             Log.w(LOG_TAG, "BUTLER > Stop keyspotting : not stopping keypotting as the recognizer is not valid!");
             return;
         }
+        recognizer.stop();
+    }
+
+/*
         if (recognizer != null) {
             Log.i(LOG_TAG, "BUTLER > Stop keyspotting");
-            recognizer.stop();
+            //recognizer.stop();
             //recognizer.cancel();   // TODO : DEL ?? just a test
+            stop();
         }
     }
+
+*/
+    public void stop() {
+        if (!isRecognizerOK) {
+            Log.w(LOG_TAG, "BUTLER > Stop : not stopping keypotting as the recognizer is not valid!");
+            return;
+        }
+        Log.i(LOG_TAG, "ButlerPocketSphinx > stop");
+        if (recognizer != null) {
+            recognizer.stop();
+            recognizer.cancel();
+            recognizer.shutdown();
+        }
+    }
+
 
 
 
@@ -383,7 +402,7 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
                 // The status will be used only to check that keyspotting can run with no risk (no other action in progress : listening or speaking)
                 if (status.equals("WAITING")) {
                     Log.i(LOG_TAG, "PocketSphinx status receiver : start key spotting !");
-                    startKeySpotting();
+                    start();
                 }
             }
         }

@@ -90,7 +90,7 @@ public class ButlerGoogleVoice extends Activity implements
             Log.e(LOG_TAG, "FAILED " + errorMessage);
             Log.e(LOG_TAG, "Request stop listening (onError function). ErrorCode=" + errorCode + ". ErrorMessage=" + errorMessage);
             speech.stopListening();
-            //stopRecognition();
+            stopRecognition();
 
 
             Intent i = new Intent("org.domogik.butler.Status");
@@ -102,7 +102,6 @@ public class ButlerGoogleVoice extends Activity implements
             // We don't raise any errors here because, it is mainly a not understood query from the user
             // Toast.makeText(this.context, "Input not understood", Toast.LENGTH_SHORT).show();  // TODO : i18n
             // we skip this part as it is called each time a valid onResult is raised.... WTF !!!!  // TODO : understood why
-            Log.i(LOG_TAG, "HERE HERE HERE");
         }
     }
 
@@ -135,7 +134,7 @@ public class ButlerGoogleVoice extends Activity implements
         Log.i(LOG_TAG, "Result : " + text);
         //Toast.makeText(this.context, "Result : " + text , Toast.LENGTH_SHORT).show();  // TODO : DEL
         speech.stopListening();
-        //stopRecognition();
+        stopRecognition();
 
         // The requests are catched by the service for processing and also the fullscreen activity for display
         Intent i = new Intent("org.domogik.butler.Status");

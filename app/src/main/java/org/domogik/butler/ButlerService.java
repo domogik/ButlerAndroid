@@ -69,7 +69,7 @@ public class ButlerService extends Service {
     // Configuration
     SharedPreferences settings;
     SharedPreferences.OnSharedPreferenceChangeListener listener;
-    Boolean continuousDialog = false;    // TODO : get from config ? Or let it hardcoded ?
+    Boolean continuousDialog = true;    // TODO : get from config ? Or let it hardcoded ?
     Boolean isTTSMute = false;          // TODO : get from config ? Or let it hardcoded ?
 
     // KeySpotting (PocketSphinx)
@@ -119,7 +119,9 @@ public class ButlerService extends Service {
         doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
         pocketSphinx = new ButlerPocketSphinx();
         if (doVoiceWakeup) {
-            pocketSphinx.start(this);
+            pocketSphinx.init(this);
+            pocketSphinx.start();
+
         }
 
 
@@ -135,7 +137,8 @@ public class ButlerService extends Service {
                     doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
                     Log.i(LOG_TAG, "Preferences : keyspotting_activated changed ! New value = " + doVoiceWakeup);
                     if (doVoiceWakeup) {
-                        pocketSphinx.start(context);
+                        pocketSphinx.init(context);
+                        pocketSphinx.start();
                     }
                     else {
                         pocketSphinx.stop();
@@ -229,7 +232,15 @@ public class ButlerService extends Service {
                 Log.i(LOG_TAG, "StatusReceiver");
             }
 
-            if ((status.equals("LISTENING_ERROR")) || (status.equals("SPEAKING_DONE"))) {
+            if (status.equals("LISTENING_ERROR")) {
+                // we restart to wait for some event (keyspotting, click on button)
+                status = "WAITING";
+                Log.i(LOG_TAG, "Status set to " + status);
+                Intent i = new Intent("org.domogik.butler.Status");
+                i.putExtra("status", status);
+                context.sendBroadcast(i);
+            }
+            else if (status.equals("SPEAKING_DONE")) {
                 // An input dialog has failed (most of the time this is related to somehting not understood by google voice or the speaking of a response is finished.
                 if (continuousDialog == true) {
                     // We want the discussion to continue without needed to click or do keyspotting again

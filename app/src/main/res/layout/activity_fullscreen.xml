@@ -9,6 +9,7 @@
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,
          TextureView, etc. -->
+
     <TextView
         android:id="@+id/fullscreen_content"
         android:layout_width="match_parent"
@@ -17,7 +18,7 @@
         android:keepScreenOn="true"
         android:text="@string/dummy_content"
         android:textColor="#333333"
-        android:textSize="50sp"
+        android:textSize="40sp"
         android:textStyle="bold"
         android:background="#000000" />
 
@@ -48,12 +49,13 @@
                                 android:text="@string/request_default"
                                 android:textColor="#ffffff"
                                 android:gravity="center"
-                                android:textSize="30dp"
+                                android:textSize="25dp"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginRight="20dp"
                                 android:layout_marginLeft="20dp"
                                 android:layout_marginBottom="20dp"
+                                android:layout_marginTop="20dp"
                                 android:id="@+id/request"
                                 android:layout_weight="1" />
 
@@ -61,7 +63,7 @@
                                 android:text="@string/response_default"
                                 android:textColor="#ffffff"
                                 android:gravity="center"
-                                android:textSize="30dp"
+                                android:textSize="25dp"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginRight="20dp"
