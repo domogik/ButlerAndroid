@@ -46,6 +46,9 @@ public class FullscreenActivity extends AppCompatActivity {
     // screen size
     int screenSize;
 
+    // Menu
+    private Menu mOptionsMenu;
+
     // Receivers
     StatusReceiverForGUI statusReceiverForGUI;
     UserRequestReceiverForGUI userRequestReceiverForGUI;
@@ -154,8 +157,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        //ajoute les entrées de menu_test à l'ActionBar
-
+        // set up the action bar
+        mOptionsMenu = menu;
         switch(screenSize) {
             case Configuration.SCREENLAYOUT_SIZE_SMALL:
                 // no menu :)
@@ -371,9 +374,11 @@ public class FullscreenActivity extends AppCompatActivity {
 
             if (isMute) {
                 muteButton.setBackgroundResource(R.drawable.mute);
+                mOptionsMenu.findItem(R.id.action_mute).setIcon(R.drawable.mute);
             }
             else {
                 muteButton.setBackgroundResource(R.drawable.unmute);
+                mOptionsMenu.findItem(R.id.action_mute).setIcon(R.drawable.unmute);
             }
         }
     }

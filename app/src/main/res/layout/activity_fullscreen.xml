@@ -114,16 +114,10 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"/>
 
-                <ImageButton
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:id="@+id/muteButton"
-                    android:onClick="onMuteButton"
-                    android:background="@drawable/unmute"
-                    android:focusable="false"
-                    android:scaleType="centerInside"
-                    android:adjustViewBounds="true"
-                    android:layout_weight="0" />
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"/>
 
                 <View
                     android:layout_width="0dp"
