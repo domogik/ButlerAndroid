@@ -41,6 +41,7 @@
 
     <string name="pref_keyspotting_threshold">Threshold</string>
     <string name="pref_summary_keyspotting_threshold">If the keyphrase is hard to recognize, you can lower this value.</string>
+    <string name="butler_crash">Butler Crashed</string>
 
 
 </resources>
