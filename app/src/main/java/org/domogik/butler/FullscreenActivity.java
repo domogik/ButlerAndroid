@@ -172,7 +172,7 @@ public class FullscreenActivity extends AppCompatActivity {
         String keyphrase = settings.getString("keyspotting_keyphrase", "notconfigured");
         Boolean doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
         if (doVoiceWakeup) {
-            request.setText(getResources().getString(R.string.request_default_with_wakeup) + " \"" + keyphrase + "\"");
+            request.setText(getResources().getString(R.string.request_default_with_wakeup) + " \"" + capitalize(keyphrase) + "\"");
             displayedKeyphrase.setText(capitalize(keyphrase));
             mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_on);
 
