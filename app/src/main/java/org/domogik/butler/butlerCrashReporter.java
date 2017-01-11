@@ -19,12 +19,12 @@ import static org.acra.ReportField.STACK_TRACE;
 
 
 @ReportsCrashes(formUri = "http://yourserver.com/yourscript",
-        mailTo = "new.domodroid@gmail.com",
+        mailTo = "butlerandroid@domogik.org",
         customReportContent = {ANDROID_VERSION, PHONE_MODEL, STACK_TRACE, LOGCAT},
         mode = ReportingInteractionMode.TOAST,
         resToastText = R.string.butler_crash)
 
-public class butler_application extends Application {
+public class butlerCrashReporter extends Application {
 
     @Override
     public void onCreate() {

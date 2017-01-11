@@ -3,6 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
 
+    <item android:title="@string/menu_keyspotting"
+        android:icon="@drawable/keyspotting_off"
+        app:showAsAction="always"
+        android:id="@+id/action_keyspotting" />
     <item android:title="@string/menu_mute"
         android:icon="@drawable/unmute"
         app:showAsAction="always"

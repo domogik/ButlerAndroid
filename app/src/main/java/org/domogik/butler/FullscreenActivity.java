@@ -51,6 +51,10 @@ public class FullscreenActivity extends AppCompatActivity {
     // Menu
     private Menu mOptionsMenu;
 
+    // settings
+    SharedPreferences settings;
+    SharedPreferences.OnSharedPreferenceChangeListener listener;
+
     // Receivers
     StatusReceiverForGUI statusReceiverForGUI;
     UserRequestReceiverForGUI userRequestReceiverForGUI;
@@ -79,6 +83,12 @@ public class FullscreenActivity extends AppCompatActivity {
 
         }
 
+        // Settings
+        settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        registerPreferenceListener();
+
+        // Default layout
+        setContentView(R.layout.activity_fullscreen);
         // Switch screen mode
         mContentView = findViewById(R.id.fullscreen_content);
         screenSize = getResources().getConfiguration().screenLayout &
@@ -87,11 +97,9 @@ public class FullscreenActivity extends AppCompatActivity {
         String toastMsg;
         switch(screenSize) {
             case Configuration.SCREENLAYOUT_SIZE_LARGE:
-                setContentView(R.layout.activity_fullscreen);
                 toastMsg = "Large screen";
                 break;
             case Configuration.SCREENLAYOUT_SIZE_NORMAL:
-                setContentView(R.layout.activity_fullscreen);
                 toastMsg = "Normal screen";
                 break;
             case Configuration.SCREENLAYOUT_SIZE_SMALL:
@@ -108,7 +116,6 @@ public class FullscreenActivity extends AppCompatActivity {
 
                 break;
             default:
-                setContentView(R.layout.activity_fullscreen);
                 toastMsg = "Screen size is neither large, normal or small";
         }
         //Toast.makeText(this, toastMsg, Toast.LENGTH_LONG).show();
@@ -130,7 +137,6 @@ public class FullscreenActivity extends AppCompatActivity {
         registerReceiver(muteStatusReceiverForGUI, new IntentFilter("org.domogik.butler.MuteStatus"));
 
         // First, we check if the configuration is done. If not, we open the configuration screen
-        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         String adminUrl = settings.getString("domogik_admin_url", "notconfigured");
         String userAuth = settings.getString("domogik_user", "notconfigured");
         String passwordAuth = settings.getString("domogik_password", "notconfigured");
@@ -160,7 +166,49 @@ public class FullscreenActivity extends AppCompatActivity {
 
         }
 
+        // Init the text view with the keyphrase if set/activated
+        TextView request = (TextView) findViewById(R.id.request);
+        TextView displayedKeyphrase = (TextView) findViewById(R.id.keyphrase);
+        String keyphrase = settings.getString("keyspotting_keyphrase", "notconfigured");
+        Boolean doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
+        if (doVoiceWakeup) {
+            request.setText(getResources().getString(R.string.request_default_with_wakeup) + " \"" + keyphrase + "\"");
+            displayedKeyphrase.setText(capitalize(keyphrase));
+        }
+        else {
+            request.setText(getResources().getString(R.string.request_default));
+        }
 
+
+
+    }
+
+
+    private void registerPreferenceListener()
+    {
+        listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+
+                if (key.equals("keyspotting_activated")) {
+                    Boolean doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
+                    String keyphrase = settings.getString("keyspotting_keyphrase", "");
+                    TextView displayedKeyphrase = (TextView) findViewById(R.id.keyphrase);
+                    Log.i(LOG_TAG, "Preferences : keyspotting_activated changed ! New value = " + doVoiceWakeup);
+                    if (doVoiceWakeup) {
+                        mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_on);
+                        displayedKeyphrase.setText(capitalize(keyphrase));
+                    }
+                    else {
+                        mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_off);
+                        displayedKeyphrase.setText("");
+                    }
+
+                }
+                // TODO : something to do/reload if the language changes ? i18n
+            }
+        };
+
+        settings.registerOnSharedPreferenceChangeListener(listener);
     }
 
     @Override
@@ -189,6 +237,14 @@ public class FullscreenActivity extends AppCompatActivity {
                 Intent intent = new Intent(FullscreenActivity.this, SettingsActivity.class);
                 startActivity(intent);
                 return true;
+            case R.id.action_keyspotting:
+                Boolean doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putBoolean("keyspotting_activated", !doVoiceWakeup);
+                editor.commit();
+                // The icon update will be done in the configuration receiver, as the config can also be set from the settings
+                return true;
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -381,16 +437,22 @@ public class FullscreenActivity extends AppCompatActivity {
             Boolean isMute = arg.getBooleanExtra("mute", false);
 
             if (isMute) {
+                // mute button or mute in action bar...
                 if (isMuteButtonDisplayed) {
                     muteButton.setBackgroundResource(R.drawable.mute);
                 }
-                mOptionsMenu.findItem(R.id.action_mute).setIcon(R.drawable.mute);
+                else {
+                    mOptionsMenu.findItem(R.id.action_mute).setIcon(R.drawable.mute);
+                }
             }
             else {
+                // mute button or mute in action bar...
                 if (isMuteButtonDisplayed) {
                     muteButton.setBackgroundResource(R.drawable.unmute);
                 }
-                mOptionsMenu.findItem(R.id.action_mute).setIcon(R.drawable.unmute);
+                else {
+                    mOptionsMenu.findItem(R.id.action_mute).setIcon(R.drawable.unmute);
+                }
             }
         }
     }
