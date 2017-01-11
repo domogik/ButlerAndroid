@@ -174,9 +174,13 @@ public class FullscreenActivity extends AppCompatActivity {
         if (doVoiceWakeup) {
             request.setText(getResources().getString(R.string.request_default_with_wakeup) + " \"" + keyphrase + "\"");
             displayedKeyphrase.setText(capitalize(keyphrase));
+            mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_on);
+
         }
         else {
             request.setText(getResources().getString(R.string.request_default));
+            mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_off);
+
         }
 
 
