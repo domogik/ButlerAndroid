@@ -438,6 +438,9 @@ public class ButlerService extends Service {
         private Boolean isTtsReady = false;
         String textToSpeak = "";
 
+        // Bluetooth
+        AudioManager audioManager;
+
         @Override
         public void onReceive(Context context, Intent arg) {
             // TODO Auto-generated method stub
@@ -455,6 +458,13 @@ public class ButlerService extends Service {
 
             // Speak only if not muted
             if (!isTTSMute) {
+                // Bluetooth
+                // require bluetooth usage (if available)
+                //audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+                //audioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+                //audioManager.startBluetoothSco();
+                //audioManager.setBluetoothScoOn(true);
+
                 // Init the TestToSpeech (tts)
                 tts = new TextToSpeech(context, this);
                 tts.setOnUtteranceProgressListener(listener);
@@ -525,6 +535,11 @@ public class ButlerService extends Service {
                 Intent i = new Intent("org.domogik.butler.Status");
                 i.putExtra("status", "SPEAKING_DONE");
                 context.sendBroadcast(i);
+
+                // Stop bluetooth usage
+                //audioManager.setMode(AudioManager.MODE_NORMAL);
+                //audioManager.stopBluetoothSco();
+                //audioManager.setBluetoothScoOn(false);
 
             }
         };

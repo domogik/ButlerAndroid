@@ -49,7 +49,7 @@ public class FullscreenActivity extends AppCompatActivity {
     int screenSize;
 
     // Menu
-    private Menu mOptionsMenu;
+    private Menu mOptionsMenu = null;
 
     // settings
     SharedPreferences settings;
@@ -174,13 +174,12 @@ public class FullscreenActivity extends AppCompatActivity {
         if (doVoiceWakeup) {
             request.setText(getResources().getString(R.string.request_default_with_wakeup) + " \"" + capitalize(keyphrase) + "\"");
             displayedKeyphrase.setText(capitalize(keyphrase));
-            mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_on);
+            // icon of the keyspotting button in actionbar will be set in actionbar creator
 
         }
         else {
             request.setText(getResources().getString(R.string.request_default));
-            mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_off);
-
+            // icon of the keyspotting button in actionbar will be set in actionbar creator
         }
 
 
@@ -199,11 +198,15 @@ public class FullscreenActivity extends AppCompatActivity {
                     TextView displayedKeyphrase = (TextView) findViewById(R.id.keyphrase);
                     Log.i(LOG_TAG, "Preferences : keyspotting_activated changed ! New value = " + doVoiceWakeup);
                     if (doVoiceWakeup) {
-                        mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_on);
+                        if (mOptionsMenu != null) {
+                            mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_on);
+                        }
                         displayedKeyphrase.setText(capitalize(keyphrase));
                     }
                     else {
-                        mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_off);
+                        if (mOptionsMenu != null) {
+                            mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_off);
+                        }
                         displayedKeyphrase.setText("");
                     }
 
@@ -225,6 +228,13 @@ public class FullscreenActivity extends AppCompatActivity {
                 break;
             default:
                 getMenuInflater().inflate(R.menu.main, menu);
+                Boolean doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
+                if (doVoiceWakeup) {
+                    mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_on);
+                }
+                else {
+                    mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_off);
+                }
         }
         return true;
     }
