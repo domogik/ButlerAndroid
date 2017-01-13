@@ -3,6 +3,7 @@ package org.domogik.butler;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -40,7 +41,7 @@ public class FullscreenActivity extends AppCompatActivity {
     // Buttons
     ImageButton speakButton;
     ImageButton muteButton;
-    boolean isMuteButtonDisplayed = false; // the mute button is displayed only on small screens
+    boolean isSmallScreen = false; // the mute button is displayed only on small screens
 
     // Google voice for STT
     private ButlerGoogleVoice Gv;
@@ -103,16 +104,21 @@ public class FullscreenActivity extends AppCompatActivity {
                 toastMsg = "Normal screen";
                 break;
             case Configuration.SCREENLAYOUT_SIZE_SMALL:
+                getWindow().requestFeature(Window.FEATURE_ACTION_BAR);
+                getSupportActionBar().hide();
+
                 setContentView(R.layout.activity_fullscreen_small);
-                isMuteButtonDisplayed = true;
+                isSmallScreen = true;
                 toastMsg = "Small screen";
                 // change the activity used !
+                /*
                 mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
                         | View.SYSTEM_UI_FLAG_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                         | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                        */
 
                 break;
             default:
@@ -122,7 +128,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
         // Buttons
         speakButton = (ImageButton)findViewById(R.id.speakbutton);
-        if (isMuteButtonDisplayed) {
+        if (isSmallScreen) {
             muteButton = (ImageButton)findViewById(R.id.muteButton);
         }
 
@@ -173,7 +179,9 @@ public class FullscreenActivity extends AppCompatActivity {
         Boolean doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
         if (doVoiceWakeup) {
             request.setText(getResources().getString(R.string.request_default_with_wakeup) + " \"" + capitalize(keyphrase) + "\"");
-            displayedKeyphrase.setText(capitalize(keyphrase));
+            if (!isSmallScreen) {
+                displayedKeyphrase.setText(capitalize(keyphrase));
+            }
             // icon of the keyspotting button in actionbar will be set in actionbar creator
 
         }
@@ -201,13 +209,18 @@ public class FullscreenActivity extends AppCompatActivity {
                         if (mOptionsMenu != null) {
                             mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_on);
                         }
-                        displayedKeyphrase.setText(capitalize(keyphrase));
+
+                        if (!isSmallScreen) {
+                            displayedKeyphrase.setText(capitalize(keyphrase));
+                        }
                     }
                     else {
                         if (mOptionsMenu != null) {
                             mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_off);
                         }
-                        displayedKeyphrase.setText("");
+                        if (!isSmallScreen) {
+                            displayedKeyphrase.setText("");
+                        }
                     }
 
                 }
@@ -262,6 +275,31 @@ public class FullscreenActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    // Exit related functions
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        String action = intent.getAction();
+        if (action == null) {
+            return;
+        }
+        switch (action) {
+            case ButlerService.CLOSE_ACTION:
+                Log.i(LOG_TAG, "REQUEST TO EXIT FROM NOTIFICATION!");
+                NotificationManager nMgr = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+                nMgr.cancel(ButlerService.NOTIFICATION);
+                exit();
+                break;
+        }
+    }
+
+    private void exit() {
+        stopService(new Intent(this, ButlerService.class));
+        finish();
     }
 
     public void onDestroy() {
@@ -452,7 +490,7 @@ public class FullscreenActivity extends AppCompatActivity {
 
             if (isMute) {
                 // mute button or mute in action bar...
-                if (isMuteButtonDisplayed) {
+                if (isSmallScreen) {
                     muteButton.setBackgroundResource(R.drawable.mute);
                 }
                 else {
@@ -461,7 +499,7 @@ public class FullscreenActivity extends AppCompatActivity {
             }
             else {
                 // mute button or mute in action bar...
-                if (isMuteButtonDisplayed) {
+                if (isSmallScreen) {
                     muteButton.setBackgroundResource(R.drawable.unmute);
                 }
                 else {

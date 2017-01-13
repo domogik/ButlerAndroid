@@ -1,5 +1,7 @@
 package org.domogik.butler;
 
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -50,6 +52,8 @@ import javax.net.ssl.X509TrustManager;
 
 // pocketsphinx
 import static edu.cmu.pocketsphinx.SpeechRecognizerSetup.defaultSetup;
+import static org.domogik.butler.R.menu.main;
+
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
@@ -83,7 +87,11 @@ public class ButlerService extends Service {
     ResponseReceiver responseReceiver;
     MuteReceiver muteReceiver;
 
-
+    // Notifications
+    public static final String CLOSE_ACTION = "close";
+    public static final int NOTIFICATION = 1;
+    private final NotificationCompat.Builder mNotificationBuilder = new NotificationCompat.Builder(this);
+    private NotificationManager mNotificationManager = null;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -97,7 +105,9 @@ public class ButlerService extends Service {
 
         //Toast.makeText(getBaseContext(), "Butler service started", Toast.LENGTH_SHORT).show();      // TODO : DEL
         // TODO : start listening here for keyspotting here ?
-        sendNotification("Butler started", "The butler service is started !");
+        //sendNotification("Butler started", "The butler service is started !");
+        setupNotifications();
+        showNotification();
 
         // Init the receivers
         statusReceiver = new StatusReceiver(this);
@@ -192,7 +202,7 @@ public class ButlerService extends Service {
 
 
     /*****************************************************************************
-     * Helper to send notifications
+     * Helpers to send notifications
      */
 
     public void sendNotification(String notificationTitle, String notificationText) {
@@ -218,6 +228,94 @@ public class ButlerService extends Service {
 
         // Build the notification and issues it with notification manager.
         notificationManager.notify(notificationId, notificationBuilder.build());
+    }
+/*
+    public void displayServiceNotification(String notificationTitle, String notificationText) {
+        int notificationId = 002;
+        int eventId = 1;
+        String EXTRA_EVENT_ID = "BUTLER SERVICE";
+
+        // Build intent for notification content to go on the application
+        Intent viewIntent = new Intent(this, FullscreenActivity.class);
+        viewIntent.putExtra(EXTRA_EVENT_ID, eventId);
+        PendingIntent viewPendingIntent =
+                PendingIntent.getActivity(this, 0, viewIntent, 0);
+
+        // Build intent to stop the service
+        PendingIntent pendingCloseIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, FullscreenActivity.class)
+                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        .setAction(CLOSE_ACTION),
+                0);
+
+        //NotificationCompat.Builder notificationBuilder =
+        //        new NotificationCompat.Builder(this)
+        if (mNotificationManager == null) {
+            mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        }
+        mNotificationBuilder
+                        .setSmallIcon(R.drawable.btn_icon)
+                        .setContentTitle(notificationTitle)
+                        .setContentText(notificationText)
+                        .setContentIntent(viewPendingIntent)
+                        .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                        .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                        .addAction(android.R.drawable.ic_menu_close_clear_cancel,
+                                getString(R.string.action_exit), pendingCloseIntent)
+                        .setOngoing(true);
+
+                ;
+
+        if (mNotificationManager != null) {
+            mNotificationManager.notify(NOTIFICATION, mNotificationBuilder.build());
+        }
+
+        // Get an instance of the NotificationManager service
+        NotificationManagerCompat notificationManager =
+                NotificationManagerCompat.from(this);
+
+        // Build the notification and issues it with notification manager.
+        notificationManager.notify(notificationId, notificationBuilder.build());
+
+
+    }
+    */
+
+    // TODO : custom layout : http://www.androidtutorialsworld.com/custom-notifications-android-example/
+    
+    private void setupNotifications() { //called in onCreate()
+        if (mNotificationManager == null) {
+            mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        }
+        // TODO : why this intent open several windows ?
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, FullscreenActivity.class)
+                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                0);
+        PendingIntent pendingCloseIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, FullscreenActivity.class)
+                        .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                        .setAction(CLOSE_ACTION),
+                0);
+        mNotificationBuilder
+                .setSmallIcon(R.drawable.btn_icon)
+                .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setContentTitle(getText(R.string.app_name))
+                .setWhen(System.currentTimeMillis())
+                .setContentIntent(pendingIntent)
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel,
+                        getString(R.string.action_exit), pendingCloseIntent)
+                .setOngoing(true);
+    }
+
+    private void showNotification() {
+        mNotificationBuilder
+                .setTicker(getText(R.string.service_connected))
+                .setContentText(getText(R.string.service_connected));
+        if (mNotificationManager != null) {
+            mNotificationManager.notify(NOTIFICATION, mNotificationBuilder.build());
+        }
     }
 
     /***
@@ -495,6 +593,15 @@ public class ButlerService extends Service {
                 HashMap<String, String> hash = new HashMap<String, String>();
                 hash.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
                         String.valueOf(AudioManager.STREAM_NOTIFICATION));
+                /*
+                STREAM_ALARM         (for alarms)
+                STREAM_DTMF          (for DTMF Tones)
+                STREAM_MUSIC         (for music playback)
+                STREAM_NOTIFICATION  (for notifications)
+                STREAM_RING          (for the phone ring)
+                STREAM_SYSTEM        (for system sounds)
+                STREAM_VOICE_CALL    (for phone calls)
+                 */
                 tts.speak(this.textToSpeak, TextToSpeech.QUEUE_ADD, hash);  // TODO : improve
 
             } else {
