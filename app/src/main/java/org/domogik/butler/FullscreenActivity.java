@@ -279,6 +279,8 @@ public class FullscreenActivity extends AppCompatActivity {
 
 
     // Exit related functions
+/* disabled for now
+   Used by the notification
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -301,6 +303,7 @@ public class FullscreenActivity extends AppCompatActivity {
         stopService(new Intent(this, ButlerService.class));
         finish();
     }
+    */
 
     public void onDestroy() {
         unregisterReceiver(statusReceiverForGUI);

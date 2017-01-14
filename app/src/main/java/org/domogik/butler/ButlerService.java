@@ -93,6 +93,9 @@ public class ButlerService extends Service {
     private final NotificationCompat.Builder mNotificationBuilder = new NotificationCompat.Builder(this);
     private NotificationManager mNotificationManager = null;
 
+    // TTS
+    private TextToSpeech tts;  // defined here and init in the onCreate() to avoid some time lost to init the engine when the first response is received
+
     @Override
     public IBinder onBind(Intent intent) {
         return null;
@@ -105,9 +108,9 @@ public class ButlerService extends Service {
 
         //Toast.makeText(getBaseContext(), "Butler service started", Toast.LENGTH_SHORT).show();      // TODO : DEL
         // TODO : start listening here for keyspotting here ?
-        //sendNotification("Butler started", "The butler service is started !");
-        setupNotifications();
-        showNotification();
+        sendNotification("Butler started", "The butler service is started !", true);
+        // disabled // setupNotifications();
+        // disabled // showNotification();
 
         // Init the receivers
         statusReceiver = new StatusReceiver(this);
@@ -131,8 +134,8 @@ public class ButlerService extends Service {
         if (doVoiceWakeup) {
             pocketSphinx.init(this);
             pocketSphinx.start();
-
         }
+
 
 
     }
@@ -205,7 +208,10 @@ public class ButlerService extends Service {
      * Helpers to send notifications
      */
 
-    public void sendNotification(String notificationTitle, String notificationText) {
+    public void sendNotification(String notificationTitle, String notificationText, Boolean permanent) {
+        if (permanent == null) {
+            permanent = false;
+        }
         int notificationId = 001;
         int eventId = 0;
         String EXTRA_EVENT_ID = "BUTLER EVENT";
@@ -217,10 +223,11 @@ public class ButlerService extends Service {
 
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.btn_icon)
+                        .setSmallIcon(R.drawable.status_bar_icon)
                         .setContentTitle(notificationTitle)
                         .setContentText(notificationText)
-                        .setContentIntent(viewPendingIntent);
+                        .setContentIntent(viewPendingIntent)
+                        .setOngoing(permanent);
 
         // Get an instance of the NotificationManager service
         NotificationManagerCompat notificationManager =
@@ -281,8 +288,9 @@ public class ButlerService extends Service {
     }
     */
 
+    /* disabled for now as it need to point to FullScreenActity (not ideal to allow the reuse of the code)
+
     // TODO : custom layout : http://www.androidtutorialsworld.com/custom-notifications-android-example/
-    
     private void setupNotifications() { //called in onCreate()
         if (mNotificationManager == null) {
             mNotificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -317,6 +325,9 @@ public class ButlerService extends Service {
             mNotificationManager.notify(NOTIFICATION, mNotificationBuilder.build());
         }
     }
+
+         */
+
 
     /***
      * Receivers
@@ -532,7 +543,7 @@ public class ButlerService extends Service {
             this.context = context;
         }
         // TTS
-        private TextToSpeech tts;
+        //private TextToSpeech tts;
         private Boolean isTtsReady = false;
         String textToSpeak = "";
 
