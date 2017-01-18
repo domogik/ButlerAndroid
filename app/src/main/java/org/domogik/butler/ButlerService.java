@@ -75,6 +75,7 @@ public class ButlerService extends Service {
     SharedPreferences.OnSharedPreferenceChangeListener listener;
     Boolean continuousDialog = true;    // TODO : get from config ? Or let it hardcoded ?
     Boolean isTTSMute = false;          // TODO : get from config ? Or let it hardcoded ?
+    Boolean getLocation = true;         // TODO : get from config
 
     // KeySpotting (PocketSphinx)
     private boolean doVoiceWakeup = false;
@@ -95,6 +96,10 @@ public class ButlerService extends Service {
 
     // TTS
     private TextToSpeech tts;  // defined here and init in the onCreate() to avoid some time lost to init the engine when the first response is received
+
+    // Location
+    private ButlerLocation location = null;
+    Thread locationThread = null;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -136,6 +141,24 @@ public class ButlerService extends Service {
             pocketSphinx.start();
         }
 
+        // Location
+        getLocation = settings.getBoolean("location_activated", false);
+        location = new ButlerLocation();
+        location.init(this);
+        if (getLocation) {
+            String strLocationInterval = settings.getString("location_interval", "300");  // 5 minutes per default
+            final int locationInterval = Integer.parseInt(strLocationInterval);
+            // Do the job in a thread
+            location.activate();
+            locationThread = new Thread(new Runnable() {
+                public void run() {
+                    location.findLocation(locationInterval);
+                }
+            });
+            locationThread.start();
+
+        }
+
 
 
     }
@@ -170,6 +193,37 @@ public class ButlerService extends Service {
                         // do nothing
                     }
 
+                }
+                else if ((key.equals("location_activated")) || (key.equals("location_interval"))) {
+                    if (locationThread != null) {
+                        try {
+                            // make the thread stop itself
+                            location.deactivate();
+                        }
+                        catch (Exception exception) {
+                            Log.w(LOG_TAG, "Unable to stop the location thread");
+                            exception.printStackTrace();
+                        }
+
+                    }
+                    // Location
+                    getLocation = settings.getBoolean("location_activated", false);
+                    if (getLocation) {
+                        String strLocationInterval = settings.getString("location_interval", "300");  // 5 minutes per default
+                        final int locationInterval = Integer.parseInt(strLocationInterval);
+                        // Do the job in a thread
+                        location.activate();
+                        locationThread = new Thread(new Runnable() {
+                            public void run() {
+                                location.findLocation(locationInterval);
+                            }
+                        });
+                        locationThread.start();
+
+                    }
+                    else {
+                        locationThread = null;
+                    }
                 }
 
             }
@@ -223,7 +277,7 @@ public class ButlerService extends Service {
 
         NotificationCompat.Builder notificationBuilder =
                 new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.status_bar_icon)
+                        .setSmallIcon(R.drawable.status_bar_icon2)
                         .setContentTitle(notificationTitle)
                         .setContentText(notificationText)
                         .setContentIntent(viewPendingIntent)
@@ -603,7 +657,8 @@ public class ButlerService extends Service {
                 Log.i(LOG_TAG, "BUTLER TTS > Speak : " + this.textToSpeak);
                 HashMap<String, String> hash = new HashMap<String, String>();
                 hash.put(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID,
-                        String.valueOf(AudioManager.STREAM_NOTIFICATION));
+                        String.valueOf(AudioManager.STREAM_VOICE_CALL));
+//                      String.valueOf(AudioManager.STREAM_NOTIFICATION));
                 /*
                 STREAM_ALARM         (for alarms)
                 STREAM_DTMF          (for DTMF Tones)
@@ -726,22 +781,6 @@ public class ButlerService extends Service {
                 } else {
                     con = (HttpURLConnection) url.openConnection();
                 }
-
-            /*
-            Authenticator.setDefault(new Authenticator() {
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(userAuth, passwordAuth.toCharArray());
-
-                }});
-            */
-
-            /*
-            BASE64Encoder enc = new sun.misc.BASE64Encoder();
-            String userpassword = username + ":" + password;
-            String encodedAuthorization = enc.encode( userpassword.getBytes() );
-            connection.setRequestProperty("Authorization", "Basic "+
-                    encodedAuthorization);
-            */
 
                 String authString = userAuth + ":" + passwordAuth;
                 byte[] authStringB64 = Base64.encode(authString.getBytes(), 0);

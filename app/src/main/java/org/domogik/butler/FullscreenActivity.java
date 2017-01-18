@@ -182,6 +182,7 @@ public class FullscreenActivity extends AppCompatActivity {
             if (!isSmallScreen) {
                 displayedKeyphrase.setText(capitalize(keyphrase));
             }
+            displayedKeyphrase.setText(capitalize(keyphrase));
             // icon of the keyspotting button in actionbar will be set in actionbar creator
 
         }
@@ -211,16 +212,18 @@ public class FullscreenActivity extends AppCompatActivity {
                         }
 
                         if (!isSmallScreen) {
-                            displayedKeyphrase.setText(capitalize(keyphrase));
+
                         }
+                        displayedKeyphrase.setText(capitalize(keyphrase));
                     }
                     else {
                         if (mOptionsMenu != null) {
                             mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_off);
                         }
                         if (!isSmallScreen) {
-                            displayedKeyphrase.setText("");
+
                         }
+                        displayedKeyphrase.setText("");
                     }
 
                 }

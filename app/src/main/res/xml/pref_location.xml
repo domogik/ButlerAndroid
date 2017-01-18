@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="location_activated"
+        android:summary="@string/pref_summary_location_activated"
+        android:title="@string/pref_location_activated"/>
+
+    <ListPreference
+        android:key="location_interval"
+        android:entries="@array/pref_location_interval"
+        android:summary="@string/pref_summary_location_interval"
+        android:entryValues="@array/pref_location_interval_values"
+        android:title="@string/pref_location_interval" />
+
+</PreferenceScreen>

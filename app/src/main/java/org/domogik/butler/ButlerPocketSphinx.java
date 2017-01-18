@@ -99,6 +99,82 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
         //keySpottingInit();
         //startKeySpotting();
 
+
+
+        settings = PreferenceManager.getDefaultSharedPreferences(context);
+        doVoiceWakeUp = settings.getBoolean("keyspotting_activated", false);
+        KEYPHRASE = settings.getString("keyspotting_keyphrase", "");
+
+        if (!doVoiceWakeUp) {
+            Log.w(LOG_TAG, "BUTLER > Start : it seems that configuration changed and keyspotting is no more activated... stopping");
+            return;
+        }
+
+        Assets assets;
+        File assetsDir;
+        try {
+            assets = new Assets(context);
+            assetsDir = assets.syncAssets();
+        } catch (IOException e) {
+            // TODO : handle the error
+            Log.e(LOG_TAG, "POCKETSPHINX > Error while loading assets");
+            return;
+        }
+
+        //String lang = Locale.getDefault().getLanguage();        // TODO : get from config
+        String lang = settings.getString("keyspotting_lang", "en");
+        File acousticModel;
+        File dictionnary;
+        Log.i(LOG_TAG, "POCKETSPHINX > Lang = " + lang);
+        if (lang.equals("fr")) {
+            //acousticModel = new File(assetsDir, "fr/fr-ptm");
+            //dictionnary = new File(assetsDir, "fr/frenchWords62K.dic");
+            acousticModel = new File(assetsDir, "fr/fr-ptm");
+            dictionnary = new File(assetsDir, "fr/frenchWords62K.dic");
+        }
+        else if (lang.equals("en")) {
+            acousticModel = new File(assetsDir, "en/en-us-ptm");
+            dictionnary = new File(assetsDir, "en/cmudict-en-us.dict");
+        }
+        else {
+            Log.e(LOG_TAG, "POCKETSPHINX > Language not recognised : skip recognizer setup");
+            return;
+        }
+
+        // build the threshold
+        try {
+            String s_threshold = settings.getString("dmg_keyspot_threshold", "20");
+            s_threshold = "1e-" + s_threshold + "f";
+            threshold = Float.parseFloat(s_threshold);
+        }
+        catch (Exception e) {
+            threshold = Float.parseFloat("1e-20f");
+        }
+
+        // init the recognizer
+        try {
+            recognizer = defaultSetup()
+                    .setAcousticModel(acousticModel)
+                    .setDictionary(dictionnary)
+
+                    // To disable logging of raw audio comment out this call (takes a lot of space on the device)
+                    //.setRawLogDir(assetsDir)
+
+                    // Threshold to tune for keyphrase to balance between false alarms and misses
+                    // 1e-60, 1e-40, 1e-20, 1e-10
+                    .setKeywordThreshold(threshold)
+
+                    // Use context-independent phonetic search, context-dependent is too slow for mobile
+                    .setBoolean("-allphone_ci", true)
+
+                    .getRecognizer();
+        } catch (IOException e) {
+            // TODO : handle the error
+            Log.e(LOG_TAG, "POCKETSPHINX > Error while doing the setup of the recognizer (PocketSPhinx)");
+            return;
+        }
+        recognizer.addListener(this);
+
     }
 
 
@@ -123,8 +199,11 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
 
 
     public void start() {
+
         Log.i(LOG_TAG, "ButlerPocketSphinx > start");
 
+
+/*
         settings = PreferenceManager.getDefaultSharedPreferences(context);
         doVoiceWakeUp = settings.getBoolean("keyspotting_activated", false);
         KEYPHRASE = settings.getString("keyspotting_keyphrase", "");
@@ -199,10 +278,14 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
         }
 
         recognizer.addListener(this);
+*/
+
+
 
         /** In your application you might not need to add all those searches.
          * They are added here for demonstration. You can leave just one.
          */
+
 
         // Create keyword-activation search.
         try {
@@ -288,7 +371,7 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
         if (recognizer != null) {
             recognizer.stop();
             recognizer.cancel();
-            recognizer.shutdown();
+            //recognizer.shutdown();
         }
     }
 

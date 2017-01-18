@@ -2,7 +2,7 @@
     <string name="app_name">Butler</string>
 
     <!-- layout -->
-    <string name="dummy_content">~DEV beta2~</string>
+    <string name="dummy_content">~DEV beta3~</string>
     <string name="request_default">Click on the bottom button...</string>
     <string name="request_default_with_wakeup">Click on the bottom button or speak this to wake me up: </string>
     <string name="response_default"></string>
@@ -48,5 +48,16 @@
     <string name="pref_keyspotting_threshold">Threshold</string>
     <string name="pref_summary_keyspotting_threshold">If the keyphrase is hard to recognize, you can lower this value.</string>
     <string name="butler_crash">Butler Crashed</string>
+
+
+
+    <string name="pref_header_location">Location</string>
+
+    <string name="pref_location_activated">Activate the location tracking</string>
+    <string name="pref_summary_location_activated">If checked, your position will be sent to your Domogik to allow you to use it in advanced scenarii.</string>
+
+    <string name="pref_location_interval">Interval</string>
+    <string name="pref_summary_location_interval">Choose the interval between two send of the location.</string>
+
 
 </resources>

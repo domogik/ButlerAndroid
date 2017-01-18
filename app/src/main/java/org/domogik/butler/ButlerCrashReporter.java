@@ -24,13 +24,14 @@ import static org.acra.ReportField.STACK_TRACE;
         mode = ReportingInteractionMode.TOAST,
         resToastText = R.string.butler_crash)
 
-public class butlerCrashReporter extends Application {
+public class ButlerCrashReporter extends Application {
 
     @Override
     public void onCreate() {
         super.onCreate();
         // The following line triggers the initialization of ACRA
         ACRA.init(this);
+        ACRA.getErrorReporter().putCustomData("Release", getResources().getString(R.string.dummy_content));
         new ANRWatchDog().start();
 
 

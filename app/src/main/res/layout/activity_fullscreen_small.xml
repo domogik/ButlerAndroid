@@ -33,10 +33,24 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+            <TextView
+                android:text=""
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:id="@+id/keyphrase"
+                android:layout_weight="0"
+                android:gravity="center"
+                android:textColor="#666666"
+                android:textSize="30sp"
+                android:textStyle="normal"
+                android:background="#000000" />
 
             <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:layout_marginRight="50dp"
+                android:layout_marginLeft="50dp"
                 android:layout_weight="1">
 
                 <LinearLayout
@@ -51,8 +65,8 @@
                                 android:textSize="30dp"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_marginRight="20dp"
-                                android:layout_marginLeft="20dp"
+                                android:layout_marginRight="0dp"
+                                android:layout_marginLeft="0dp"
                                 android:layout_marginBottom="20dp"
                                 android:id="@+id/request"
                                 android:layout_weight="1" />
