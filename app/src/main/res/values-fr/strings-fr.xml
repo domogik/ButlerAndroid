@@ -1,0 +1,75 @@
+<resources>
+    <string name="app_name">Butler</string>
+
+    <!-- release -->
+    <!-- the english values are used for all languages -->
+
+    <!-- layout main -->
+    <string name="request_default">Cliquez sur le logo pour commencer...</string>
+    <string name="request_default_with_wakeup">Cliquez sur le logo pour commencer ou dîtes: </string>
+    <string name="response_default"></string>
+    <string name="title_activity_settings">Paramètres</string>
+
+    <!-- layout help -->
+    <string name="help_text_1">L\'application Butler Android vous permet d\'interagir avec votre serveur Domogik.</string>
+
+    <!-- menu -->
+    <string name="menu_main">Paramètres</string>
+    <string name="menu_mute">Silence</string>
+    <string name="menu_keyspotting">Réveil via un mot clé</string>
+
+    <!-- notifications -->
+    <string name="action_exit">Arrêter le service</string>
+    <string name="service_connected">Le majordome est démarré</string>
+
+    <!-- Strings related to Settings -->
+    <string name="pref_header_domogik">Domogik</string>
+
+    <string name="pref_domogik_admin_url">Url de l\'interface d\'administration</string>
+    <!-- default value is set in the english values -->
+    <string name="pref_summary_domogik_admin_url">Configurez l\'url de l\'interface d\'administration de Domogik</string>
+
+    <string name="pref_domogik_admin_user">Utilisateur</string>
+    <!-- default value is set in the english values -->
+    <string name="pref_summary_domogik_admin_user">Configurez le login d\'un utilisateur de Domogik</string>
+
+    <string name="pref_domogik_admin_password">Mot de passe</string>
+    <!-- default value is set in the english values -->
+    <string name="pref_summary_domogik_admin_password">Configurez le mot de passe de l\'utilisateur</string>
+
+
+    <string name="pref_header_keyspotting">Réveil via un mot clé</string>
+
+    <string name="pref_keyspotting_activated">Activer le réveil par mot clé</string>
+    <string name="pref_summary_keyspotting_activated">Si coché, vous pourrez réveiller le majordome en prononçant le mot clé</string>
+
+    <string name="pref_keyspotting_lang">Langue</string>
+    <string name="pref_summary_keyspotting_lang">Choisissez le langage du mot clé</string>
+
+    <string name="pref_keyspotting_keyphrase">Mot clé</string>
+    <!-- default value is set in the english values -->
+    <string name="pref_summary_keyspotting_keyphrase">Configurez le mot clé qui servira au réveil à la voix</string>
+
+    <string name="pref_keyspotting_threshold">Seuil de sensibilité</string>
+    <string name="pref_summary_keyspotting_threshold">Si le mot clé est dur à détecter, vous pouvez régler le seuil de sensibilité de détection</string>
+    <string name="butler_crash">Le majordome a planté, fichtre!</string>
+
+
+    <string name="pref_header_location">Localisation</string>
+
+    <string name="pref_location_activated">Activer le suivi de position</string>
+    <string name="pref_summary_location_activated">Si coché, l\'application enverra périodiquement votre position à votre serveur Domogik pour que vous puissiez l\'exploiter dans des scénarios</string>
+
+    <string name="pref_location_interval">Intervalle</string>
+    <string name="pref_summary_location_interval">Choisissez l\'intervalle entre l\'envoi de deux positions</string>
+
+
+    <string name="pref_header_about">Aide / à propos</string>
+
+    <string name="pref_about_help">Aide</string>
+    <string name="pref_summary_about_help">Afficher l\'aide</string>
+
+    <string name="pref_about_release">Version de l\'application</string>
+    <!-- no summary, sumary is the release -->
+
+</resources>
