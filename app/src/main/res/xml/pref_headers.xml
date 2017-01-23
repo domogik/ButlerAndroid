@@ -16,4 +16,10 @@
         android:fragment="org.domogik.butler.SettingsActivity$LocationPreferenceFragment"
 
         android:title="@string/pref_header_location" />
+
+    <header
+        android:fragment="org.domogik.butler.SettingsActivity$AboutPreferenceFragment"
+
+        android:title="@string/pref_header_about" />
+
 </preference-headers>

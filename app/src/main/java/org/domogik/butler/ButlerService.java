@@ -762,8 +762,8 @@ public class ButlerService extends Service {
             Log.i(LOG_TAG, "LocationReceiver");
 
             this.context = context;
-            String latitude = arg.getStringExtra("latitude");
-            String longitude = arg.getStringExtra("longitude");
+            String latitude = String.valueOf(arg.getDoubleExtra("latitude", 0));
+            String longitude = String.valueOf(arg.getDoubleExtra("longitude", 0));
 
             String adminUrl = settings.getString("domogik_admin_url", "notconfigured");
             String userAuth = settings.getString("domogik_user", "notconfigured");
@@ -820,20 +820,8 @@ public class ButlerService extends Service {
 
             /*** Start processing the data **************************/
             Log.i(LOG_TAG, "Start processing REST response...");
-            // TODO : json object
-            // extract data from json
-            // publish response over Intent
-            // on GUI : display response
-            // on Service : add TTS
-            //              play response
 
-            Intent i = new Intent("org.domogik.butler.Status");
-            i.putExtra("status", "REQUESTING_THE_BUTLER_DONE");
-            context.sendBroadcast(i);
-
-            Intent i2 = new Intent("org.domogik.butler.Response");
-            i2.putExtra("text", response);
-            context.sendBroadcast(i2);
+            // just... nothing to do here ;)
         }
     }
 
@@ -916,7 +904,7 @@ public class ButlerService extends Service {
                 Log.i(LOG_TAG, "Call to REST finished");
 
             } catch (Exception e) {
-                Log.e(LOG_TAG, "Error while calling REST : " + e.toString());
+                Log.e(LOG_TAG, "Error while calling REST to query the butler : " + e.toString());
             }
 
 
@@ -1051,7 +1039,7 @@ public class ButlerService extends Service {
                 Log.i(LOG_TAG, "Call to REST finished");
 
             } catch (Exception e) {
-                Log.e(LOG_TAG, "Error while calling REST : " + e.toString());
+                Log.e(LOG_TAG, "Error while calling REST to send location : " + e.toString());
             }
 
 

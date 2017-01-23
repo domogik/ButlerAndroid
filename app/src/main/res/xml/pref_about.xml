@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference
+        android:title="@string/pref_about_release"
+        android:summary="@string/release">
+    </Preference>
+
+    <Preference
+        android:title="@string/pref_about_help"
+        android:summary="@string/pref_summary_about_help">
+
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="org.domogik.butler"
+            android:targetClass="org.domogik.butler.HelpActivity"
+            />
+
+    </Preference>
+
+</PreferenceScreen>
