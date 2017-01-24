@@ -3,7 +3,7 @@
 
     <!-- release -->
     <string name="dummy_content">~DEV beta4~</string>  <!-- this one is displayed in the back of the main activity. Must be empty for a stable release -->
-    <string name="release">0.1 beta4</string>  <!-- this one is displayed in the about menu -->
+    <string name="release">0.1 beta5</string>  <!-- this one is displayed in the about menu -->
 
     <!-- layout main -->
     <string name="request_default">Click on the bottom button...</string>
