@@ -6,7 +6,7 @@
 
     <!-- layout main -->
     <string name="request_default">Cliquez sur le logo pour commencer...</string>
-    <string name="request_default_with_wakeup">Cliquez sur le logo pour commencer ou dîtes: </string>
+    <!-- <string name="request_default_with_wakeup">Cliquez sur le logo pour commencer ou dîtes: </string>-->
     <string name="response_default"></string>
     <string name="title_activity_settings">Paramètres</string>
 
@@ -53,6 +53,12 @@
     <string name="pref_keyspotting_threshold">Seuil de sensibilité</string>
     <string name="pref_summary_keyspotting_threshold">Si le mot clé est dur à détecter, vous pouvez régler le seuil de sensibilité de détection</string>
     <string name="butler_crash">Le majordome a planté, fichtre!</string>
+
+
+    <string name="pref_header_service">Service</string>
+
+    <string name="pref_service_stop">Arrêter le service</string>
+    <string name="pref_summary_service_stop">Cocher pour arrêter le majordome et le service.</string>
 
 
     <string name="pref_header_location">Localisation</string>

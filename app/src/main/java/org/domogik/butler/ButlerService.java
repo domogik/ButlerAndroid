@@ -1,5 +1,6 @@
 package org.domogik.butler;
 
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -15,6 +16,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
@@ -70,6 +72,8 @@ public class ButlerService extends Service {
 
     Context context;
 
+    Intent serviceIntent;
+
     // Configuration
     SharedPreferences settings;
     SharedPreferences.OnSharedPreferenceChangeListener listener;
@@ -88,6 +92,10 @@ public class ButlerService extends Service {
     ResponseReceiver responseReceiver;
     MuteReceiver muteReceiver;
     LocationReceiver locationReceiver;
+
+    // Screen wakeup
+    Boolean doWakeupScreen = true;   // true to allow screen wakeup on the first voice wake up
+    PowerManager.WakeLock wakeLock;
 
     // Notifications
     public static final String CLOSE_ACTION = "close";
@@ -190,7 +198,14 @@ public class ButlerService extends Service {
                     if (doVoiceWakeup) {
                         pocketSphinx.init(context);
                         pocketSphinx.stop();
-                        pocketSphinx.start();
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                pocketSphinx.start();
+                            }
+                        }, 300);
+
                     }
                     else {
                         // do nothing
@@ -228,6 +243,15 @@ public class ButlerService extends Service {
                         locationThread = null;
                     }
                 }
+                else if ((key.equals("service_stop"))) {
+                    Boolean serviceStop = settings.getBoolean("service_stop", false);
+                    if (serviceStop) {
+                        //context.stopService(new Intent(context, TestService.class));
+                        Log.i(LOG_TAG, "Stop the Butler service");
+                        ButlerService.this.stopSelf();
+                    }
+                }
+
 
             }
         };
@@ -238,16 +262,25 @@ public class ButlerService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // TODO : start listening here for keyspotting here ?
+        Log.i(LOG_TAG, "Butler > onStartCommand");
+        serviceIntent = intent;
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
+        Log.i(LOG_TAG, "Butler > onDestroy");
+
+        hideNotification();
+
         unregisterReceiver(statusReceiver);
         unregisterReceiver(userRequestReceiver);
         unregisterReceiver(startListeningUserRequestReceiver);
         unregisterReceiver(responseReceiver);
         unregisterReceiver(muteReceiver);
+        unregisterReceiver(locationReceiver);
+
+        stopService(serviceIntent);
 
         super.onDestroy();
     }
@@ -292,6 +325,17 @@ public class ButlerService extends Service {
 
         // Build the notification and issues it with notification manager.
         notificationManager.notify(notificationId, notificationBuilder.build());
+    }
+
+    public void hideNotification() {
+        // Get an instance of the NotificationManager service
+        NotificationManagerCompat notificationManager =
+                NotificationManagerCompat.from(this);
+
+        // Build the notification and issues it with notification manager.
+        // TODO : make notification id as a class item
+        notificationManager.cancel(001);
+
     }
 /*
     public void displayServiceNotification(String notificationTitle, String notificationText) {
@@ -412,13 +456,48 @@ public class ButlerService extends Service {
                 Log.i(LOG_TAG, "StatusReceiver");
             }
 
-            if (status.equals("LISTENING_ERROR")) {
+
+            if (status.equals("LISTENING")) {
+                // Wake up the screen (usefull in case of voice wakeup)
+                if (doWakeupScreen) {
+                    Log.i(LOG_TAG, "Do wake up screen !");
+
+                    // Scren tuned on
+                    // The pin code and similar stuff bypass is allowed thanks to the window.addFlags(...) in the activity
+                    // TODO : make this used only related to a parameter!
+                    KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+                    final KeyguardManager.KeyguardLock kl = km.newKeyguardLock("MyKeyguardLock");
+                    kl.disableKeyguard();
+
+                    PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+                    wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP
+                            | PowerManager.ON_AFTER_RELEASE, "MyWakeLock");
+                    wakeLock.acquire();
+
+
+
+                    Intent dialogIntent = new Intent(context, FullscreenActivity.class);
+                    dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(dialogIntent);
+                    doWakeupScreen = false;
+
+                    wakeLock.release();
+                }
+            }
+            else if (status.equals("LISTENING_DONE")) {
+                // For next time, allow again screen wake up
+                doWakeupScreen = true;
+            }
+            else if (status.equals("LISTENING_ERROR")) {
                 // we restart to wait for some event (keyspotting, click on button)
                 status = "WAITING";
                 Log.i(LOG_TAG, "Status set to " + status);
                 Intent i = new Intent("org.domogik.butler.Status");
                 i.putExtra("status", status);
                 context.sendBroadcast(i);
+
+                // For next time, allow again screen wake up
+                doWakeupScreen = true;
             }
             else if (status.equals("SPEAKING_DONE")) {
                 // An input dialog has failed (most of the time this is related to somehting not understood by google voice or the speaking of a response is finished.
@@ -741,6 +820,12 @@ public class ButlerService extends Service {
             Intent i = new Intent("org.domogik.butler.MuteStatus");
             i.putExtra("mute", isTTSMute);
             context.sendBroadcast(i);
+
+            // Save
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putBoolean("mute", isTTSMute);
+            editor.commit();
+
 
         }
     }

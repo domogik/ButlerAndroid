@@ -38,6 +38,9 @@ public class FullscreenActivity extends AppCompatActivity {
     private String LOG_TAG = "BUTLER > FullscreenAct";
 
     private View mContentView;
+
+    Intent butlerService;
+
     // Buttons
     ImageButton speakButton;
     ImageButton muteButton;
@@ -56,6 +59,10 @@ public class FullscreenActivity extends AppCompatActivity {
     SharedPreferences settings;
     SharedPreferences.OnSharedPreferenceChangeListener listener;
 
+    // Screen wake up
+    // TODO DEL
+    //Boolean doWakeupScreen = true;   // true to allow screen wakeup on the first voice wake up
+
     // Receivers
     StatusReceiverForGUI statusReceiverForGUI;
     UserRequestReceiverForGUI userRequestReceiverForGUI;
@@ -70,7 +77,7 @@ public class FullscreenActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // We first start the Butler Service
-        Intent butlerService = new Intent(FullscreenActivity.this, ButlerService.class);
+        butlerService = new Intent(FullscreenActivity.this, ButlerService.class);
         startService(butlerService);
 
 
@@ -129,7 +136,7 @@ public class FullscreenActivity extends AppCompatActivity {
         // Buttons
         speakButton = (ImageButton)findViewById(R.id.speakbutton);
         if (isSmallScreen) {
-            muteButton = (ImageButton)findViewById(R.id.muteButton);
+            muteButton = (ImageButton) findViewById(R.id.muteButton);
         }
 
         // Init the receivers
@@ -178,7 +185,11 @@ public class FullscreenActivity extends AppCompatActivity {
         String keyphrase = settings.getString("keyspotting_keyphrase", "notconfigured");
         Boolean doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
         if (doVoiceWakeup) {
-            request.setText(getResources().getString(R.string.request_default_with_wakeup) + " \"" + capitalize(keyphrase) + "\"");
+            //Commented because when you goes from the activity with no previous dialog and voice wake up activated to
+            //voice wake up deactivated with the top button, the text is still telling that we can vocie wake up
+            // TODO : how to improve this ?
+            //request.setText(getResources().getString(R.string.request_default_with_wakeup) + " \"" + capitalize(keyphrase) + "\"");
+            request.setText(getResources().getString(R.string.request_default));
             if (!isSmallScreen) {
                 displayedKeyphrase.setText(capitalize(keyphrase));
             }
@@ -191,7 +202,31 @@ public class FullscreenActivity extends AppCompatActivity {
             // icon of the keyspotting button in actionbar will be set in actionbar creator
         }
 
+        // Init the mute buttons for a small screen
+        Boolean isMute = settings.getBoolean("mute", false);
+        if (isMute) {
+            // mute button or mute in action bar...
+            if (isSmallScreen) {
+                muteButton.setBackgroundResource(R.drawable.mute);
+            }
+        }
+        else {
+            // mute button or mute in action bar...
+            if (isSmallScreen) {
+                muteButton.setBackgroundResource(R.drawable.unmute);
+            }
+        }
 
+        // The config "service_stop" must always be off (for a better user experience)
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean("service_stop", false);
+        editor.commit();
+
+        // To allow unlock screen on voice wake up and screen wake up
+        Window window = this.getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
+        window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
+        window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
     }
 
@@ -227,6 +262,16 @@ public class FullscreenActivity extends AppCompatActivity {
                     }
 
                 }
+                else if ((key.equals("service_stop"))) {
+                    Boolean serviceStop = settings.getBoolean("service_stop", false);
+                    if (serviceStop) {
+                        Log.i(LOG_TAG, "Stop application");
+                        stopService(butlerService);
+                        finishAffinity();
+                        //getActivity( ).finish();
+                        //System.exit(0);
+                    }
+                }
                 // TODO : something to do/reload if the language changes ? i18n
             }
         };
@@ -251,6 +296,22 @@ public class FullscreenActivity extends AppCompatActivity {
                 else {
                     mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_off);
                 }
+
+                // Init the mute buttons
+                Boolean isMute = settings.getBoolean("mute", false);
+                if (isMute) {
+                    // mute button or mute in action bar...
+                    if (mOptionsMenu != null) {
+                        mOptionsMenu.findItem(R.id.action_mute).setIcon(R.drawable.mute);
+                    }
+                }
+                else {
+                    // mute button or mute in action bar...
+                    if (mOptionsMenu != null) {
+                        mOptionsMenu.findItem(R.id.action_mute).setIcon(R.drawable.unmute);
+                    }
+                }
+
         }
         return true;
     }
@@ -397,6 +458,21 @@ public class FullscreenActivity extends AppCompatActivity {
                 Log.i(LOG_TAG, "StatusReceiver : status='" + status + "'");
             }
             if ((status.equals("LISTENING")) || (status.equals("WANT_LISTENING_AGAIN"))) {
+                /* TODO DEL
+
+                // Wake up the screen (usefull in case of voice wakeup)
+                if (doWakeupScreen) {
+                    Log.i(LOG_TAG, "Do wake up screen !");
+                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                                         WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                         WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                                         WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    doWakeupScreen = false;
+                }
+
+                 */
+
+
                 // Listening action in progress with Google Voice or whatever... or a listening action will be soon initiated (continuous speaking)
                 // We also get a voice level information
                 int level = arg.getIntExtra("voicelevel", 0);  // 0 = default value
@@ -407,6 +483,10 @@ public class FullscreenActivity extends AppCompatActivity {
                 // Listening action done, we put back the original button icon
                 // If any process should start after listening (requesting the butler for example), a new icon will be applied immediatly after)
                 speakButton.setBackgroundResource(R.drawable.btn_icon);
+
+                // For next time, allow again screen wake up
+                // TODO : DEL
+                //doWakeupScreen = true;
             }
             else if (status.equals("LISTENING_ERROR")) {
                 speakButton.setBackgroundResource(R.drawable.btn_icon);

@@ -12,10 +12,17 @@
 
         android:title="@string/pref_header_keyspotting" />
 
+    <!-- TODO : activate in Domogik 0.6
     <header
         android:fragment="org.domogik.butler.SettingsActivity$LocationPreferenceFragment"
 
         android:title="@string/pref_header_location" />
+    -->
+
+    <header
+        android:fragment="org.domogik.butler.SettingsActivity$ServicePreferenceFragment"
+
+        android:title="@string/pref_header_service" />
 
     <header
         android:fragment="org.domogik.butler.SettingsActivity$AboutPreferenceFragment"
