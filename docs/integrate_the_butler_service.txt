@@ -1,3 +1,10 @@
+=================================================================
+Development - integrate the butler in another Android Application
+=================================================================
+
+.. note:: 
+    This page is in progress
+
 To include the butler service part in another application :
 
 1. copy all Butler*.java files

@@ -1,0 +1,53 @@
+==============
+Butler Android
+==============
+
+What is Butler Android ?
+========================
+
+**ButlerAndroid** is an Android application to control your :doc:`Domogik <http://www.domogik.org>`  smart home controller with your **voice**. Domogik includes a component, named the **Butler**. This is the component that allows you to speak to your house!
+
+This application is like **Siri** or **Google assistant** : you can wake it up with a keyphrase of your choice and discuss with your house : 
+
+* Query about the weather today or tomorrow.
+* Ask to switch on/off any appliance.
+* Ask the temperature or himidity of any room.
+* Manage your shopping list.
+* And a lot of other tasks !
+
+How to install it ?
+===================
+
+Just download the last APK from the :doc:`official Domogik website download page <http://www.domogik.org/en/download.html/>`. Then, launch the application, configure it with the url of your Domogik administration base url, a valid login and its password. And it is all to start using the application.
+
+If you want to activate the voice wake up, just choose the wake up language, the words to activate the wake and a threshold (15 is a good starting value).
+
+
+Using the application
+=====================
+
+After configuring the application, you can click on the bottom button (the Domogik logo) or use your wake up words : the application will start to listen to you. 
+
+When the application is waiting/listening for your query, the bottom button icon will change to a microphone icon. When the listening is finished, the icon will change to a cog while requesting the Domogik Butler. Then, the response will be spoken by the application (and the icon will also change).
+
+Once the response spoken, the application will start again to listen to you to allow a continuous speaking. If you say nothing, it will just stop listening and wait until you tell your wake up words or click on the bottom button.
+
+
+What can I say to the Butler ?
+==============================
+
+Well, it depends on the packages you have installed on your Domogik, but basically you can at least :
+
+* control your lights and appliances
+* control your shutters
+* get temperature, humidity from the corresponding devices
+* ...
+
+Voice wake up is hard to use
+============================
+
+If it is hard to wake up, try to lower the configured threshold.
+
+If you have too much unwanted voice wake up, you can increase the threshold value. You can also change your wake up word by using something longer.
+
+

@@ -1,4 +1,11 @@
+=============================
+Development - internal status
+=============================
 
+What is the status ?
+====================
+
+The status is the current state of the service : if defines which action is in progress. 
 
 List of the status
 ==================
@@ -8,6 +15,7 @@ List of the status
     WAITING                        # Set up at service startup and used when no listening/processing/speaking action is done
     
     LISTENING
+    LISTENING_WAITING_FOR_SERVER_RESPONSE   # when the speech has ended and we are waiting for the server response. Not usefull on a fast network, but usefull on a slow network to understand we can't speak anymore because we just wait for Google voice servers response...
     
     LISTENING_ERROR                # Raised if an error occured during voice recognition
     \_ WANT_LISTENING_AGAIN        # For continuous speaking

@@ -1,26 +1,33 @@
+=======================
+Testing the application
+=======================
 
+
+First startup
+=============
+
+* configuration missing check is displayed
 
 Service
 =======
 
-
-
-
+* auto restart working on android <= 4.4
+* auto restart working on android > 4.4
+* notification on startup
+* shutdown from the menu
 
 
 Interface
 =========
 
-
-
-
+* no crash when displayed on various devices (small screens vs other screens)
+* mute button is working
+* voice wake up on/off is working, even when google voice is listening
+* access to configuration is working
 
 
 
 Keyspotting
 ===========
 
-Test 1
-------
-
-If deactivated in conf, no wake up
+* If deactivated in conf, no wake up
