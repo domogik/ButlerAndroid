@@ -9,6 +9,11 @@ This is an Android application to speak with the Domogik's Butler.
 Screenshots 
 ===========
 
+On a smartphone
+---------------
+
+![](docs/smartphone_001.png)
+
 On a smartwatch
 ---------------
 

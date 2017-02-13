@@ -29,6 +29,12 @@ You can not yet use this application on :
 
 * Android Wear 1.x devices
 
+Here is a  screenshot taken on a smartphone :
+
+.. image:: smartphone_001.png
+    :align: center
+    :alt: Domogik Butler
+
 Here are some screenshots taken on an Android 5.1 smartwatch (in french for now, sorry) :
 
 .. image:: example_01.png
