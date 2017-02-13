@@ -12,6 +12,6 @@ Screenshots
 On a smartwatch
 ---------------
 
-![](docs/example_01.png =150px)
-![](docs/example_02.png =150px)
-![](docs/example_03.png =150px)
+![](docs/example_01.png =150x)
+![](docs/example_02.png =150x)
+![](docs/example_03.png =150x)
