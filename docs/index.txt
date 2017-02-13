@@ -15,12 +15,82 @@ This application is like **Siri** or **Google assistant** : you can wake it up w
 * Manage your shopping list.
 * And a lot of other tasks !
 
+
+On which devices can I use this application ?
+=============================================
+
+You can use this application on :
+
+* Smartphones
+* Tablets
+* Regular Android smartwatches (not Android Wear)
+
+You can not yet use this application on :
+
+* Android Wear 1.x devices
+
+Here are some screenshots taken on an Android 5.1 smartwatch (in french for now, sorry) :
+
+.. image:: example_01.png
+    :align: center
+    :alt: Domogik Butler
+
+.. image:: example_02.png
+    :align: center
+    :alt: Domogik Butler
+
+.. image:: example_03.png
+    :align: center
+    :alt: Domogik Butler
+
+
 How to install it ?
 ===================
 
 Just download the last APK from the :doc:`official Domogik website download page <http://www.domogik.org/en/download.html/>`. Then, launch the application, configure it with the url of your Domogik administration base url, a valid login and its password. And it is all to start using the application.
 
+.. image:: config_001.png
+    :align: center
+    :alt: Domogik Butler configuration
+
+.. image:: config_002.png
+    :align: center
+    :alt: Domogik Butler configuration
+
+.. image:: config_003.png
+    :align: center
+    :alt: Domogik Butler configuration
+
+.. image:: config_004.png
+    :align: center
+    :alt: Domogik Butler configuration
+
+
 If you want to activate the voice wake up, just choose the wake up language, the words to activate the wake and a threshold (15 is a good starting value).
+
+.. image:: config_005.png
+    :align: center
+    :alt: Domogik Butler configuration
+
+.. image:: config_006.png
+    :align: center
+    :alt: Domogik Butler configuration
+
+.. image:: config_007.png
+    :align: center
+    :alt: Domogik Butler configuration
+
+.. image:: config_008.png
+    :align: center
+    :alt: Domogik Butler configuration
+
+.. image:: config_009.png
+    :align: center
+    :alt: Domogik Butler configuration
+
+.. image:: config_010.png
+    :align: center
+    :alt: Domogik Butler configuration
 
 
 Using the application
@@ -28,7 +98,23 @@ Using the application
 
 After configuring the application, you can click on the bottom button (the Domogik logo) or use your wake up words : the application will start to listen to you. 
 
+.. image:: usage_001.png
+    :align: center
+    :alt: Domogik Butler usage
+
 When the application is waiting/listening for your query, the bottom button icon will change to a microphone icon. When the listening is finished, the icon will change to a cog while requesting the Domogik Butler. Then, the response will be spoken by the application (and the icon will also change).
+
+.. image:: usage_002.png
+    :align: center
+    :alt: Domogik Butler usage
+
+.. image:: usage_003.png
+    :align: center
+    :alt: Domogik Butler usage
+
+.. image:: usage_004.png
+    :align: center
+    :alt: Domogik Butler usage
 
 Once the response spoken, the application will start again to listen to you to allow a continuous speaking. If you say nothing, it will just stop listening and wait until you tell your wake up words or click on the bottom button.
 
