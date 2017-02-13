@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="listen_on_display_activated"
+        android:summary="@string/pref_summary_advanced_listen_on_display_activated"
+        android:title="@string/pref_advanced_listen_on_display_activated"/>
+
+
+
+
+</PreferenceScreen>
