@@ -228,6 +228,13 @@ public class FullscreenActivity extends AppCompatActivity {
         window.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
+        // If set in configuration, start listening when opening the activity
+        Boolean startListening = settings.getBoolean("listen_on_display_activated", false);
+        if (startListening) {
+            Intent i = new Intent("org.domogik.butler.StartListeningUserRequest");
+            sendBroadcast(i);
+        }
+
     }
 
 
@@ -242,20 +249,20 @@ public class FullscreenActivity extends AppCompatActivity {
                     TextView displayedKeyphrase = (TextView) findViewById(R.id.keyphrase);
                     Log.i(LOG_TAG, "Preferences : keyspotting_activated changed ! New value = " + doVoiceWakeup);
                     if (doVoiceWakeup) {
-                        if (mOptionsMenu != null) {
-                            mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_on);
-                        }
 
                         if (!isSmallScreen) {
+                            if (mOptionsMenu != null) {
+                                mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_on);
+                            }
 
                         }
                         displayedKeyphrase.setText(capitalize(keyphrase));
                     }
                     else {
-                        if (mOptionsMenu != null) {
-                            mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_off);
-                        }
                         if (!isSmallScreen) {
+                            if (mOptionsMenu != null) {
+                                mOptionsMenu.findItem(R.id.action_keyspotting).setIcon(R.drawable.keyspotting_off);
+                            }
 
                         }
                         displayedKeyphrase.setText("");
@@ -487,6 +494,9 @@ public class FullscreenActivity extends AppCompatActivity {
                 // For next time, allow again screen wake up
                 // TODO : DEL
                 //doWakeupScreen = true;
+            }
+            else if (status.equals("LISTENING_WAITING_FOR_SERVER_RESPONSE")) {
+                speakButton.setBackgroundResource(R.drawable.btn_icon_mic_waiting);
             }
             else if (status.equals("LISTENING_ERROR")) {
                 speakButton.setBackgroundResource(R.drawable.btn_icon);

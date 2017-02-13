@@ -25,6 +25,11 @@
         android:title="@string/pref_header_service" />
 
     <header
+        android:fragment="org.domogik.butler.SettingsActivity$AdvancedPreferenceFragment"
+
+        android:title="@string/pref_header_advanced" />
+
+    <header
         android:fragment="org.domogik.butler.SettingsActivity$AboutPreferenceFragment"
 
         android:title="@string/pref_header_about" />

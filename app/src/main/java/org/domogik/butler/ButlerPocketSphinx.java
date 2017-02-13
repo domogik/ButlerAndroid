@@ -308,7 +308,7 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
         // Init keyspotting
         //keySpottingInit();
 
-    if (!isRecognizerOK) {
+        if (!isRecognizerOK) {
             Log.w(LOG_TAG, "BUTLER > Start keyspotting : not starting keypotting as the recognizer is not valid!");
             return;
         }
@@ -330,7 +330,7 @@ public class ButlerPocketSphinx extends Activity implements RecognitionListener 
                         Log.i(LOG_TAG, "doVWU=" + doVoiceWakeUp);
                         Log.i(LOG_TAG, "status=" + status);
                         if (doVoiceWakeUp) {
-                            recognizer.startListening(KWS_SEARCH, 100000);
+                            recognizer.startListening(KWS_SEARCH, 100000); // in milliseconds
                         }
                         else {
                             Log.w(LOG_TAG, "BUTLER > Start keyspotting : it seems that configuration changed and keyspotting is no more activated... stopping");

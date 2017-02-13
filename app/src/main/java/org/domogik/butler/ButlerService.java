@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
@@ -34,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.net.Authenticator;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -185,7 +187,10 @@ public class ButlerService extends Service {
                     Log.i(LOG_TAG, "Preferences : keyspotting_activated changed ! New value = " + doVoiceWakeup);
                     if (doVoiceWakeup) {
                         pocketSphinx.init(context);
-                        pocketSphinx.start();
+                        // As the user can reactivate voice wake up while a listening action, we start pocketSphinx only during a WAITING state (else the user will see an error)
+                        if (status == "WAITING") {
+                            pocketSphinx.start();
+                        }
                     }
                     else {
                         pocketSphinx.stop();
@@ -281,6 +286,10 @@ public class ButlerService extends Service {
         unregisterReceiver(locationReceiver);
 
         stopService(serviceIntent);
+
+        // TODO ????? keep ?
+        // this is a test to avoid the service to be killed on Android >= 4.4 (kitkat)
+        startService(new Intent(context, ButlerService.class));
 
         super.onDestroy();
     }
@@ -463,25 +472,10 @@ public class ButlerService extends Service {
                     Log.i(LOG_TAG, "Do wake up screen !");
 
                     // Scren tuned on
-                    // The pin code and similar stuff bypass is allowed thanks to the window.addFlags(...) in the activity
-                    // TODO : make this used only related to a parameter!
-                    KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
-                    final KeyguardManager.KeyguardLock kl = km.newKeyguardLock("MyKeyguardLock");
-                    kl.disableKeyguard();
-
-                    PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-                    wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP
-                            | PowerManager.ON_AFTER_RELEASE, "MyWakeLock");
-                    wakeLock.acquire();
+                    forceScreenOn();
 
 
 
-                    Intent dialogIntent = new Intent(context, FullscreenActivity.class);
-                    dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(dialogIntent);
-                    doWakeupScreen = false;
-
-                    wakeLock.release();
                 }
             }
             else if (status.equals("LISTENING_DONE")) {
@@ -497,9 +491,22 @@ public class ButlerService extends Service {
                 context.sendBroadcast(i);
 
                 // For next time, allow again screen wake up
+                stopForceScreenOn();
                 doWakeupScreen = true;
+
+            }
+            else if (status.equals("REQUESTING_THE_BUTLER_DONE")) {
+                // Turn screen on when we got the response
+                // This is usefull for smartwatches where the screen turn off after a few seconds : if the butler need some time to process or if the network is not speed, it allows to read the response instead of only getting the voice!
+
+                // TODO : DEL
+                // not needed in fact since we release the wake lock after the speak process
+                //forceScreenOn();
             }
             else if (status.equals("SPEAKING_DONE")) {
+                // speaking done, we can let the screen turn off
+                stopForceScreenOn();
+
                 // An input dialog has failed (most of the time this is related to somehting not understood by google voice or the speaking of a response is finished.
                 if (continuousDialog == true) {
                     // We want the discussion to continue without needed to click or do keyspotting again
@@ -520,11 +527,45 @@ public class ButlerService extends Service {
                     Intent i = new Intent("org.domogik.butler.Status");
                     i.putExtra("status", status);
                     context.sendBroadcast(i);
+
+
                 }
             }
 
 
         }
+
+        private void forceScreenOn() {
+            // The pin code and similar stuff bypass is allowed thanks to the window.addFlags(...) in the activity
+            // TODO : make this used only related to a parameter!
+
+            // TODO : move in a function and also use it when a response is received from the butler
+            // TODO : move in a function and also use it when a response is received from the butler
+            // TODO : move in a function and also use it when a response is received from the butler
+            // TODO : move in a function and also use it when a response is received from the butler
+            // TODO : move in a function and also use it when a response is received from the butler
+            // TODO : move in a function and also use it when a response is received from the butler
+            KeyguardManager km = (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
+            final KeyguardManager.KeyguardLock kl = km.newKeyguardLock("MyKeyguardLock");
+            kl.disableKeyguard();
+
+            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP
+                    | PowerManager.ON_AFTER_RELEASE, "MyWakeLock");
+            wakeLock.acquire();
+
+
+            Intent dialogIntent = new Intent(context, FullscreenActivity.class);
+            dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(dialogIntent);
+            doWakeupScreen = false;
+        }
+
+        private void stopForceScreenOn() {
+            wakeLock.release();
+        }
+
+
     }
 
 
@@ -702,6 +743,7 @@ public class ButlerService extends Service {
             this.textToSpeak = text;
 
             // Speak only if not muted
+            isTTSMute = settings.getBoolean("mute", false);
             if (!isTTSMute) {
                 // Bluetooth
                 // require bluetooth usage (if available)

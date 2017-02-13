@@ -2,8 +2,8 @@
     <string name="app_name">Butler</string>
 
     <!-- release -->
-    <string name="dummy_content">~DEV beta5~</string>  <!-- this one is displayed in the back of the main activity. Must be empty for a stable release -->
-    <string name="release">0.1 beta5</string>  <!-- this one is displayed in the about menu -->
+    <string name="dummy_content"></string>  <!-- this one is displayed in the back of the main activity. Must be empty for a stable release -->
+    <string name="release">0.9 beta6</string>  <!-- this one is displayed in the about menu -->
 
     <!-- layout main -->
     <string name="request_default">Click on the bottom button...</string>
@@ -69,6 +69,14 @@
 
     <string name="pref_location_interval">Interval</string>
     <string name="pref_summary_location_interval">Choose the interval between two send of the location.</string>
+
+
+    <string name="pref_header_advanced">Advanced settings</string>
+
+    <string name="pref_advanced_listen_on_display_activated">Start listening you on application startup</string>
+    <string name="pref_summary_advanced_listen_on_display_activated">If checked, when you open the application, it will start to listen you query to the Butler.</string>
+
+
 
 
     <string name="pref_header_about">Help / About</string>

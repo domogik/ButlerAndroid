@@ -70,6 +70,14 @@
     <string name="pref_summary_location_interval">Choisissez l\'intervalle entre l\'envoi de deux positions</string>
 
 
+    <string name="pref_header_advanced">Configuration avancée</string>
+
+    <string name="pref_advanced_listen_on_display_activated">Débuter l\'écoute au démarrage de l\'application</string>
+    <string name="pref_summary_advanced_listen_on_display_activated">Si coché, au démarrage de l\'application, le Majordome commencera à vous écouter.</string>
+
+
+
+
     <string name="pref_header_about">Aide / à propos</string>
 
     <string name="pref_about_help">Aide</string>

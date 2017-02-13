@@ -80,6 +80,9 @@ public class ButlerGoogleVoice extends Activity implements
     @Override
     public void onEndOfSpeech() {
         Log.i(LOG_TAG, "onEndOfSpeech");
+        Intent i = new Intent("org.domogik.butler.Status");
+        i.putExtra("status", "LISTENING_WAITING_FOR_SERVER_RESPONSE");
+        context.sendBroadcast(i);
     }
 
     @Override
