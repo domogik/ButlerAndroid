@@ -5,7 +5,7 @@ Butler Android
 What is Butler Android ?
 ========================
 
-**ButlerAndroid** is an Android application to control your :doc:`Domogik <http://www.domogik.org>`  smart home controller with your **voice**. Domogik includes a component, named the **Butler**. This is the component that allows you to speak to your house!
+**ButlerAndroid** is an Android application to control your `Domogik <http://www.domogik.org>`_  smart home controller with your **voice**. Domogik includes a component, named the **Butler**. This is the component that allows you to speak to your house!
 
 This application is like **Siri** or **Google assistant** : you can wake it up with a keyphrase of your choice and discuss with your house : 
 
@@ -47,7 +47,7 @@ Here are some screenshots taken on an Android 5.1 smartwatch (in french for now,
 How to install it ?
 ===================
 
-Just download the last APK from the :doc:`official Domogik website download page <http://www.domogik.org/en/download.html/>`. Then, launch the application, configure it with the url of your Domogik administration base url, a valid login and its password. And it is all to start using the application.
+Just download the last APK from the `official Domogik website download page <http://www.domogik.org/en/download.html/>`_. Then, launch the application, configure it with the url of your Domogik administration base url, a valid login and its password. And it is all to start using the application.
 
 .. image:: config_001.png
     :align: center
