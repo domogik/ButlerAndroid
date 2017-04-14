@@ -2,8 +2,8 @@
     <string name="app_name">Butler</string>
 
     <!-- release -->
-    <string name="dummy_content"></string>  <!-- this one is displayed in the back of the main activity. Must be empty for a stable release -->
-    <string name="release">0.9 beta6</string>  <!-- this one is displayed in the about menu -->
+    <string name="dummy_content">0.9 beta8</string>  <!-- this one is displayed in the back of the main activity. Must be empty for a stable release -->
+    <string name="release">0.9 beta8</string>  <!-- this one is displayed in the about menu -->
 
     <!-- layout main -->
     <string name="request_default">Click on the bottom button...</string>
@@ -70,11 +70,23 @@
     <string name="pref_location_interval">Interval</string>
     <string name="pref_summary_location_interval">Choose the interval between two send of the location.</string>
 
+    <string name="pref_location_errors_hidden">Hide the location errors</string>
+    <string name="pref_summary_location_errors_hidden">If your phone is out of network, hiding the errors will avoid you to see error messages on the screen.</string>
+
+    <string name="pref_location_wifi_1_name">Location n°1 - name</string>
+    <string name="pref_summary_location_wifi_1_name">Name of a location configured on Domogik side</string>
+
+    <string name="pref_location_wifi_1_ssid">Location n°1 - wifi name (SSID)</string>
+    <string name="pref_summary_location_wifi_1_ssid">The Wifi SSID of the location</string>
+
 
     <string name="pref_header_advanced">Advanced settings</string>
 
     <string name="pref_advanced_listen_on_display_activated">Start listening you on application startup</string>
     <string name="pref_summary_advanced_listen_on_display_activated">If checked, when you open the application, it will start to listen you query to the Butler.</string>
+
+    <string name="pref_advanced_hide_notification">Hide the notification icon</string>
+    <string name="pref_summary_advanced_hide_notification">If checked, hide the notification icon.</string>
 
 
 

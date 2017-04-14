@@ -24,6 +24,10 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
+    <!-- list of wifi networks -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+
     <application
         android:name=".ButlerCrashReporter"
         android:allowBackup="true"
@@ -51,5 +55,12 @@
             android:label="@string/title_activity_settings" />
         <activity android:name=".HelpActivity"></activity>
     </application>
+
+    <receiver android:name=".WifiListReceiver">
+       <intent-filter>
+           <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
+           <action android:name="android.net.wifi.SCAN_RESULTS"></action>
+       </intent-filter>
+    </receiver>
 
 </manifest>

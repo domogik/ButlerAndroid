@@ -66,12 +66,14 @@ public class FullscreenActivity extends AppCompatActivity {
     // Receivers
     StatusReceiverForGUI statusReceiverForGUI;
     UserRequestReceiverForGUI userRequestReceiverForGUI;
+    UserPartialRequestReceiverForGUI userPartialRequestReceiverForGUI;
     ResponseReceiverForGUI responseReceiverForGUI;
     MuteStatusReceiverForGUI muteStatusReceiverForGUI;
 
     // Just mandatory to allow requesting RECORD_AUDIO permission...
     int MY_PERMISSIONS_REQUEST_RECORD_AUDIO;
-    
+    int MY_PERMISSION_ACCESS_COURSE_LOCATION;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,6 +91,16 @@ public class FullscreenActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.RECORD_AUDIO}, MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
 
+        }
+
+        // Then, check also if the user have the permission to use Location services
+        // Needed for some Android releases
+        // more informations : http://stackoverflow.com/questions/32491960/android-check-permission-for-locationmanager
+        if ( ContextCompat.checkSelfPermission( this,
+                Manifest.permission.ACCESS_COARSE_LOCATION ) != PackageManager.PERMISSION_GRANTED ) {
+
+            ActivityCompat.requestPermissions( this,
+                    new String[] {  android.Manifest.permission.ACCESS_COARSE_LOCATION  }, MY_PERMISSION_ACCESS_COURSE_LOCATION );
         }
 
         // Settings
@@ -144,6 +156,8 @@ public class FullscreenActivity extends AppCompatActivity {
         registerReceiver(statusReceiverForGUI, new IntentFilter("org.domogik.butler.Status"));
         userRequestReceiverForGUI = new UserRequestReceiverForGUI(this);
         registerReceiver(userRequestReceiverForGUI, new IntentFilter("org.domogik.butler.UserRequest"));
+        userPartialRequestReceiverForGUI = new UserPartialRequestReceiverForGUI(this);
+        registerReceiver(userPartialRequestReceiverForGUI, new IntentFilter("org.domogik.butler.UserPartialRequest"));
         responseReceiverForGUI = new ResponseReceiverForGUI(this);
         registerReceiver(responseReceiverForGUI, new IntentFilter("org.domogik.butler.Response"));
         muteStatusReceiverForGUI = new MuteStatusReceiverForGUI(this);
@@ -379,6 +393,7 @@ public class FullscreenActivity extends AppCompatActivity {
     public void onDestroy() {
         unregisterReceiver(statusReceiverForGUI);
         unregisterReceiver(userRequestReceiverForGUI);
+        unregisterReceiver(userPartialRequestReceiverForGUI);
         unregisterReceiver(responseReceiverForGUI);
         unregisterReceiver(muteStatusReceiverForGUI);
 
@@ -542,6 +557,31 @@ public class FullscreenActivity extends AppCompatActivity {
 
             updateTheRequest(text);
             updateTheResponse("...");
+        }
+    }
+
+
+    class UserPartialRequestReceiverForGUI extends BroadcastReceiver {
+        /* When a spoken user request is received and recognized
+           This Receiver may be found also on some activities to be displayed
+         */
+        private Context context;
+        public UserPartialRequestReceiverForGUI(Context context) {
+            this.context = context;
+        }
+
+        private String LOG_TAG = "GUI > UserPartialReqRcv";
+
+        @Override
+        public void onReceive(Context context, Intent arg) {
+            // TODO Auto-generated method stub
+            Log.i(LOG_TAG, "UserPartialRequestReceiverForGUI");
+            String text = arg.getStringExtra("text");
+            //Toast.makeText(context, "User request received : " + text, Toast.LENGTH_LONG).show(); // TODO DEL
+            // TODO : add try..catch ?
+
+            updateTheRequest(text);
+            updateTheResponse("");
         }
     }
 

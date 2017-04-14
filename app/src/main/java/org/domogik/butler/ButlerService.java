@@ -12,6 +12,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.media.AudioManager;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.IBinder;
@@ -43,7 +45,9 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 import javax.net.ssl.HostnameVerifier;
@@ -95,6 +99,12 @@ public class ButlerService extends Service {
     MuteReceiver muteReceiver;
     LocationReceiver locationReceiver;
 
+    // wifi list (with receiver)
+    WifiReceiver receiverWifi;
+    WifiManager mainWifi;
+    private final Handler handler = new Handler();
+    ArrayList<String> wifiSSIDList = new ArrayList<String>();
+
     // Screen wakeup
     Boolean doWakeupScreen = true;   // true to allow screen wakeup on the first voice wake up
     PowerManager.WakeLock wakeLock;
@@ -122,9 +132,15 @@ public class ButlerService extends Service {
         super.onCreate();
         this.context = this;
 
+        // Preferences listener
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+        registerPreferenceListener();
+
         //Toast.makeText(getBaseContext(), "Butler service started", Toast.LENGTH_SHORT).show();      // TODO : DEL
         // TODO : start listening here for keyspotting here ?
-        sendNotification("Butler started", "The butler service is started !", true);
+        if (!settings.getBoolean("hide_notification", false)) {
+            sendNotification("Butler started", "The butler service is started !", true);
+        }
         // disabled // setupNotifications();
         // disabled // showNotification();
 
@@ -142,9 +158,20 @@ public class ButlerService extends Service {
         locationReceiver = new LocationReceiver(this);
         registerReceiver(locationReceiver, new IntentFilter("org.domogik.butler.Location"));
 
-        // Preferences listener
-        settings = PreferenceManager.getDefaultSharedPreferences(this);
-        registerPreferenceListener();
+        // Find the available wifi SSID since the application startup.
+        // TODO : for now this is not really used. Later we should display them somewhere in preferences to help the user to choose a SSID
+        // see http://stackoverflow.com/a/17167318
+        mainWifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+
+        receiverWifi = new WifiReceiver();
+        registerReceiver(receiverWifi, new IntentFilter(
+                WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        if(mainWifi.isWifiEnabled()==false)
+        {
+            mainWifi.setWifiEnabled(true);
+        }
+        doInback();
+
 
         // Init keyspotting
         doVoiceWakeup = settings.getBoolean("keyspotting_activated", false);
@@ -157,24 +184,33 @@ public class ButlerService extends Service {
         // Location
         getLocation = settings.getBoolean("location_activated", false);
         location = new ButlerLocation();
-        location.init(this);
-        if (getLocation) {
-            String strLocationInterval = settings.getString("location_interval", "300");  // 5 minutes per default
-            final int locationInterval = Integer.parseInt(strLocationInterval);
-            // Do the job in a thread
-            location.activate();
-            locationThread = new Thread(new Runnable() {
-                public void run() {
-                    location.findLocation(locationInterval);
-                }
-            });
-            locationThread.start();
-
+        if (getLocation){
+            location.init(this);
         }
 
+    }
 
+    public void doInback()
+    {
+        handler.postDelayed(new Runnable() {
+
+            @Override
+            public void run()
+            {
+                // TODO Auto-generated method stub
+                mainWifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+
+                receiverWifi = new WifiReceiver();
+                registerReceiver(receiverWifi, new IntentFilter(
+                        WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+                mainWifi.startScan();
+                doInback();
+            }
+        }, 60000);
 
     }
+
+
 
 
     private void registerPreferenceListener()
@@ -218,6 +254,15 @@ public class ButlerService extends Service {
 
                 }
                 else if ((key.equals("location_activated")) || (key.equals("location_interval"))) {
+                    getLocation = settings.getBoolean("location_activated", false);
+                    if (getLocation) {
+                        location.init(context);
+                    }
+                    else {
+                        location.stop();
+                    }
+                    // TODO: handle the new location usage
+                    /*
                     if (locationThread != null) {
                         try {
                             // make the thread stop itself
@@ -247,6 +292,7 @@ public class ButlerService extends Service {
                     else {
                         locationThread = null;
                     }
+                    */
                 }
                 else if ((key.equals("service_stop"))) {
                     Boolean serviceStop = settings.getBoolean("service_stop", false);
@@ -596,7 +642,7 @@ public class ButlerService extends Service {
                 gv.startVoiceRecognition(context);
             }
             else {
-                Log.i(LOG_TAG, "Already doing something, not starting the Voice recognition");
+                Log.i(LOG_TAG, "Already doing something, not starting the Voice recognition. Current status = '" + status + "'");
             }
 
         }
@@ -691,12 +737,6 @@ public class ButlerService extends Service {
 
             /*** Start processing the data **************************/
             Log.i(LOG_TAG, "Start processing REST response...");
-            // TODO : json object
-            // extract data from json
-            // publish response over Intent
-            // on GUI : display response
-            // on Service : add TTS
-            //              play response
 
             Intent i = new Intent("org.domogik.butler.Status");
             i.putExtra("status", "REQUESTING_THE_BUTLER_DONE");
@@ -873,7 +913,7 @@ public class ButlerService extends Service {
     }
 
 
-    class LocationReceiver extends BroadcastReceiver implements LocationPostAsyncResponse {
+    class LocationReceiver extends BroadcastReceiver implements ButlerLocationPostAsyncResponse {
         /* When a location is sent bu ButlerLocation
          */
 
@@ -889,6 +929,7 @@ public class ButlerService extends Service {
             Log.i(LOG_TAG, "LocationReceiver");
 
             this.context = context;
+            String locationName = arg.getStringExtra("locationName");
             String latitude = String.valueOf(arg.getDoubleExtra("latitude", 0));
             String longitude = String.valueOf(arg.getDoubleExtra("longitude", 0));
 
@@ -901,21 +942,25 @@ public class ButlerService extends Service {
             String source = "ButlerAndroid - " + user;
 
             // Build the data to POST
-            String postData = "[{\"latitude\" : \"" + latitude + "\", \"longitude\" : \"" + longitude + "\"}]";
+            String postLocationName = ",\"location_name\" : \"" + locationName + "\"";
+            String postData = "[{\"latitude\" : \"" + latitude + "\", \"longitude\" : \"" + longitude + "\"" + postLocationName + "}]";
             Log.i(LOG_TAG, "Data to post to the butler : " + postData);
 
             // Do the call
-            LocationPostAsyncTask locationPostAsyncTask = new LocationPostAsyncTask();
+            ButlerLocationPostAsyncTask locationPostAsyncTask = new ButlerLocationPostAsyncTask();
             locationPostAsyncTask.delegate = this;
             locationPostAsyncTask.execute(restUrl, userAuth, passwordAuth, postData);
         }
 
         //this override the implemented method from asyncTask
         @Override
-        public void processFinish(int httpStatusCode, String response) {
+        public void processFinish(int httpStatusCode, final String response) {
+
             //Here you will receive the result fired from async class
             //of onPostExecute(result) method.
             Log.i(LOG_TAG, "Data received from the butler : HTTP_CODE='" + httpStatusCode + "', data=" + response);
+
+            /************ not needed here **************
             if (httpStatusCode == 200) {
                 // OK
                 // The handler is needed to be able to Toast
@@ -930,7 +975,7 @@ public class ButlerService extends Service {
                 Handler h = new Handler(Looper.getMainLooper());
                 h.post(new Runnable() {
                     public void run() {
-                        Toast.makeText(context, "Authentication error while querying Domogik over Rest.", Toast.LENGTH_LONG).show();                    }
+                        //Toast.makeText(context, "Authentication error while querying Domogik over Rest.", Toast.LENGTH_LONG).show();                    }
                 });
             }
             else {
@@ -940,15 +985,55 @@ public class ButlerService extends Service {
                 h.post(new Runnable() {
                     public void run() {
                         // TODO : find a way to display the httpcode in the error
-                        Toast.makeText(context, "Error while querying Domogik over Rest.", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(context, "Error while querying Domogik over Rest.", Toast.LENGTH_LONG).show();
                     }
                 });
             }
+             */
 
             /*** Start processing the data **************************/
             Log.i(LOG_TAG, "Start processing REST response...");
 
             // just... nothing to do here ;)
+            // or at least display the error :
+            if (!response.equals("")) {
+                if (!settings.getBoolean("location_errors_hidden", true)) {
+                    // The handler is needed to be able to Toast
+                    Handler h = new Handler(Looper.getMainLooper());
+                    h.post(new Runnable() {
+                        public void run() {
+
+                            Toast.makeText(context, response, Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+    class WifiReceiver extends BroadcastReceiver
+    {
+        public void onReceive(Context c, Intent intent)
+        {
+
+            // TODO : use this or not ? for now this is not used. We check only for the connected wifi in the ButlerLocation class
+            List<ScanResult> wifiList;
+            wifiList = mainWifi.getScanResults();
+            for(int i = 0; i < wifiList.size(); i++)
+            {
+                Log.d(LOG_TAG, "Wifi : " + wifiList.get(i).SSID);
+                if (! wifiSSIDList.contains(wifiList.get(i).SSID)) {
+                    Log.i(LOG_TAG, "New unkwown Wifi SSID found : " + wifiList.get(i).SSID);
+                    wifiSSIDList.add(wifiList.get(i).SSID);
+                }
+            }
+
+
         }
     }
 
@@ -1019,6 +1104,7 @@ public class ButlerService extends Service {
                 if (statusCode == 200) {
                     // all ok, process result
                     JSONObject jsonObject = new JSONObject(result);
+                    Log.d(LOG_TAG, "REST HTTP Response content : " + result);
                     response = jsonObject.getString("text");
                     Log.i(LOG_TAG, "Response from the butler is : " + response);
                 } else if (statusCode == 401) {
@@ -1092,8 +1178,8 @@ public class ButlerService extends Service {
 
 
 
-    class LocationPostAsyncTask extends AsyncTask<String, Void, String> {
-        public LocationPostAsyncResponse delegate = null;
+    class ButlerLocationPostAsyncTask extends AsyncTask<String, Void, String> {
+        public ButlerLocationPostAsyncResponse delegate = null;
         private String LOG_TAG = "BUTLER > Location";
 
         @Override
@@ -1153,9 +1239,14 @@ public class ButlerService extends Service {
                 // Authentication forbidden
                 if (statusCode == 200) {
                     // all ok, process result
+                    Log.d(LOG_TAG, "REST HTTP Response content : " + result);
                     JSONObject jsonObject = new JSONObject(result);
-                    response = jsonObject.getString("text");
-                    Log.i(LOG_TAG, "Response from the butler is : " + response);
+                    String responseStatus = jsonObject.getString("status");
+                    if (responseStatus.equals("ERROR")) { 
+                        //Toast.makeText(context, "Domogik does not accept the location for the person '\" + userAuth + \"'. Reason is : " + jsonObject.getString("error"), Toast.LENGTH_LONG).show();
+                        response = "Domogik does not accept the location for the person '\" + userAuth + \"'. Reason is : " + jsonObject.getString("error");
+                        Log.w(LOG_TAG, "Domogik does not accept the location for the person '" + userAuth + "'. Reason is : " + jsonObject.getString("error"));
+                    }
                 } else if (statusCode == 401) {
                     response = "Bad login or password configured";    // TODO : i18n
                 } else {

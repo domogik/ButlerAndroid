@@ -7,6 +7,11 @@
         android:summary="@string/pref_summary_advanced_listen_on_display_activated"
         android:title="@string/pref_advanced_listen_on_display_activated"/>
 
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="hide_notification"
+        android:summary="@string/pref_summary_advanced_hide_notification"
+        android:title="@string/pref_advanced_hide_notification"/>
 
 
 

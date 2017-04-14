@@ -14,4 +14,27 @@
         android:entryValues="@array/pref_location_interval_values"
         android:title="@string/pref_location_interval" />
 
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="location_errors_hidden"
+        android:summary="@string/pref_summary_location_errors_hidden"
+        android:title="@string/pref_location_errors_hidden"/>
+
+    <!-- Location 1 -->
+    <EditTextPreference
+        android:key="location_wifi_1_name"
+        android:defaultValue=""
+        android:summary="@string/pref_summary_location_wifi_1_name"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_location_wifi_1_name" />
+
+    <EditTextPreference
+        android:key="location_wifi_1_ssid"
+        android:defaultValue=""
+        android:summary="@string/pref_summary_location_wifi_1_ssid"
+        android:selectAllOnFocus="true"
+        android:singleLine="true"
+        android:title="@string/pref_location_wifi_1_ssid" />
+
 </PreferenceScreen>

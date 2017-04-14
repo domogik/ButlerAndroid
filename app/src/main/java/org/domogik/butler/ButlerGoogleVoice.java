@@ -44,6 +44,7 @@ public class ButlerGoogleVoice extends Activity implements
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         recognizerIntent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+        recognizerIntent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true); // to enable the call to onPartialResult()
 
         // Check if a recognition service is available
         if (speech.isRecognitionAvailable(context) == true) {
@@ -114,8 +115,25 @@ public class ButlerGoogleVoice extends Activity implements
     }
 
     @Override
-    public void onPartialResults(Bundle arg0) {
+    public void onPartialResults(Bundle results) {
         Log.i(LOG_TAG, "onPartialResults");
+        ArrayList<String> matches = results
+                .getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+        String text = "";
+        for (String result : matches) {
+            // we get only the first result...
+            text += result; // + "\n";
+            break;
+        }
+        if (! text.isEmpty()) {
+            Log.i(LOG_TAG, "Partial Result : " + text);
+
+            Intent i2 = new Intent("org.domogik.butler.UserPartialRequest");
+            i2.putExtra("text", text);
+            context.sendBroadcast(i2);
+
+        }
+
     }
 
     @Override

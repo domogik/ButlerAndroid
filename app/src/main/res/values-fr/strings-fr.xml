@@ -69,11 +69,23 @@
     <string name="pref_location_interval">Intervalle</string>
     <string name="pref_summary_location_interval">Choisissez l\'intervalle entre l\'envoi de deux positions</string>
 
+    <string name="pref_location_errors_hidden">Cacher les erreurs de localisation</string>
+    <string name="pref_summary_location_errors_hidden">Si votre téléphone est hors réseau, des erreurs peuvent survenir lors de l\'envoi des données à Domogik. Elles seront cachées.</string>
+
+    <string name="pref_location_wifi_1_name">Localisation n°1 - nom</string>
+    <string name="pref_summary_location_wifi_1_name">Nom d\'une localisation</string>
+
+    <string name="pref_location_wifi_1_ssid">Localisation n°1 - nom du Wifi (SSID)</string>
+    <string name="pref_summary_location_wifi_1_ssid">Le SSID d\'une connexion WIFI</string>
+
 
     <string name="pref_header_advanced">Configuration avancée</string>
 
     <string name="pref_advanced_listen_on_display_activated">Débuter l\'écoute au démarrage de l\'application</string>
     <string name="pref_summary_advanced_listen_on_display_activated">Si coché, au démarrage de l\'application, le Majordome commencera à vous écouter.</string>
+
+    <string name="pref_advanced_hide_notification">Cacher l\'icône de notification</string>
+    <string name="pref_summary_advanced_hide_notification">Si coché, l\'icône de notification sera cachée.</string>
 
 
 

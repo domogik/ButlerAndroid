@@ -1,0 +1,11 @@
+=========
+Changelog
+=========
+
+
+0.9 beta 8
+==========
+
+* Add geolocation system compliant with Domogik
+* Display user queries partial results while speaking
+
